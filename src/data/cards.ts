@@ -319,6 +319,261 @@ C('hundredFists', M, 'rare', 'fists', 'Yüz Yumruk', 'Hundred Fists', (u) => atk
 C('cycloneKick', M, 'rare', 'whirl', 'Kasırga Tekmesi', 'Cyclone Kick', (u) => atk(2, 0, [D(v(u, 10, 14), { to: 'near', radius: 1, fx: 'fist' }), PUSH(2, 'near', { radius: 1 })], { target: 'none' }));
 C('diamondBody', M, 'rare', 'gem', 'Elmas Beden', 'Diamond Body', (u) => pwr(2, [SELF('diamond', v(u, 2, 3))]));
 
+/* =============================================================== SHAMAN */
+const SH = 'shaman';
+const totemNote = (u: boolean, hp: number, up: number, tr: string, en: string) =>
+  L(`${tr} (${u ? hp + up : hp} can). Her tur titreşir.`, `${en} (${u ? hp + up : hp} HP). Pulses every turn.`);
+C('lightningBolt', SH, 'starter', 'lightning', 'Yıldırım Oku', 'Lightning Bolt', (u) => atk(1, 3, [D(v(u, 6, 9), { fx: 'lightning' })]));
+C('earthShield', SH, 'starter', 'shield', 'Toprak Kalkanı', 'Earth Shield', (u) => skl(1, [B(v(u, 5, 8))]));
+C('fireTotem', SH, 'starter', 'totem', 'Ateş Totemi', 'Fire Totem', (u) => skl(1, [SUMMON('fireTotem')], {
+  target: 'empty',
+  range: 2,
+  desc: totemNote(u, 7, 4, 'Ateş Totemi dik: 2 kare içindeki düşmanlara 3 hasar ve 1 Yanık', 'Plant a Fire Totem: 3 damage and 1 Burn to enemies within 2'),
+}));
+C('flameShock', SH, 'starter', 'fire', 'Alev Şoku', 'Flame Shock', (u) => atk(1, 3, [D(v(u, 4, 6), { fx: 'fire' }), S('burn', v(u, 2, 3))]));
+C('healingTotem', SH, 'common', 'totem', 'Şifa Totemi', 'Healing Totem', (u) => skl(1, [SUMMON('healTotem')], {
+  target: 'empty',
+  range: 2,
+  desc: totemNote(u, 7, 4, 'Şifa Totemi dik: seni 3, yardımcılarını 2 iyileştirir', 'Plant a Healing Totem: heals you 3 and allies 2'),
+}));
+C('stormTotem', SH, 'common', 'totem', 'Fırtına Totemi', 'Storm Totem', (u) => skl(v(u, 2, 1), [SUMMON('stormTotem')], {
+  target: 'empty',
+  range: 2,
+  desc: totemNote(false, 7, 0, 'Fırtına Totemi dik: rastgele düşmana 5 hasar', 'Plant a Storm Totem: 5 damage to a random enemy'),
+}));
+C('earthTotem', SH, 'common', 'totem', 'Toprak Totemi', 'Earth Totem', (u) => skl(1, [SUMMON('earthTotem')], {
+  target: 'empty',
+  range: 2,
+  desc: totemNote(u, 14, 6, 'Toprak Totemi dik: sana 4 blok verir ve düşmanın yolunu keser', 'Plant an Earth Totem: gives you 4 Block and blocks the path'),
+}));
+C('frostShock', SH, 'common', 'ice', 'Ayaz Şoku', 'Frost Shock', (u) => atk(1, 3, [D(v(u, 5, 7), { fx: 'ice' }), S('root', 1)]));
+C('stormstrike', SH, 'common', 'lightning', 'Fırtına Vuruşu', 'Stormstrike', (u) => atk(1, 1, [D(v(u, 4, 5), { times: 2, fx: 'lightning' })]));
+C('spiritWalk', SH, 'common', 'wind', 'Ruh Yürüyüşü', 'Spirit Walk', (u) => skl(0, [{ k: 'moveTo' }, B(v(u, 3, 5))], { target: 'empty', range: 3 }));
+C('ancestralGuidance', SH, 'common', 'book', 'Ata Rehberliği', 'Ancestral Guidance', (u) => skl(1, [DRAW(v(u, 2, 3)), HEAL(v(u, 2, 3))]));
+C('thunderclap', SH, 'common', 'wave', 'Gök Gürültüsü', 'Thunderclap', (u) => atk(1, 0, [D(v(u, 5, 7), { to: 'near', radius: 1, fx: 'lightning' }), PUSH(1, 'near', { radius: 1 })], { target: 'none' }));
+C('totemicCall', SH, 'uncommon', 'totem', 'Totem Çağrısı', 'Totemic Call', (u) => skl(v(u, 1, 0), [CUSTOM('totemPulse'), DRAW(1)], {
+  desc: L('Tüm totemlerin hemen titreşir. 1 kart çek.', 'All your totems pulse now. Draw 1 card.'),
+}));
+C('chainHeal', SH, 'uncommon', 'heart', 'Şifa Zinciri', 'Chain Heal', (u) => skl(1, [HEAL(v(u, 4, 6)), { k: 'heal', n: v(u, 4, 6), to: 'allies' }], { exhaust: true }));
+C('lightningShield', SH, 'uncommon', 'lightning', 'Yıldırım Kalkanı', 'Lightning Shield', (u) => skl(1, [B(v(u, 6, 9)), SELF('counter', v(u, 4, 5))]));
+C('earthquake', SH, 'uncommon', 'explosion', 'Deprem', 'Earthquake', (u) => atk(2, 0, [D(v(u, 7, 10), { to: 'all', fx: 'slam' }), S('root', 1, 'all')], { target: 'none' }));
+C('elementalFury', SH, 'uncommon', 'totem', 'Element Öfkesi', 'Elemental Fury', (u) => pwr(v(u, 2, 1), [SELF('totemEcho', 1)]));
+C('ancestralSpirit', SH, 'uncommon', 'soul', 'Ata Ruhu', 'Ancestral Spirit', (u) => skl(1, [SELF('regen', v(u, 4, 6)), DRAW(1)]));
+C('warDrums', SH, 'rare', 'drum', 'Savaş Davulları', 'War Drums', (u) => skl(v(u, 2, 1), [SELF('strength', 2), CUSTOM('allyStrength', 2)], {
+  exhaust: true,
+  desc: L('Sen ve tüm yardımcıların 2 Güç kazanır. Tükenir.', 'You and all allies gain 2 Strength. Exhaust.'),
+}));
+C('stormCaller', SH, 'rare', 'lightning', 'Fırtına Çağıran', 'Storm Caller', (u) => pwr(v(u, 3, 2), [SELF('stormcall', 1)]));
+C('spiritLink', SH, 'rare', 'totem', 'Ruh Bağı', 'Spirit Link', (u) => skl(v(u, 3, 2), [SUMMON('fireTotem'), SUMMON('healTotem'), SUMMON('stormTotem')], {
+  exhaust: true,
+  desc: L('Ateş, Şifa ve Fırtına totemlerini birlikte dik. Tükenir.', 'Plant a Fire, a Healing and a Storm Totem at once. Exhaust.'),
+}));
+
+/* ================================================================ DRUID */
+const DR = 'druid';
+C('claw', DR, 'starter', 'claw', 'Pençe', 'Rend', (u) => atk(1, 1, [D(v(u, 6, 9), { fx: 'slash' })]));
+C('barkskin', DR, 'starter', 'leaf', 'Ağaç Kabuğu', 'Barkskin', (u) => skl(1, [B(v(u, 5, 8))]));
+C('bearForm', DR, 'starter', 'bear', 'Ayı Formu', 'Bear Form', (u) => skl(1, [CUSTOM('shiftBear', v(u, 3, 5)), B(v(u, 3, 5))], {
+  desc: u
+    ? L('<span class="kw">Ayı Formu</span>na gir: tur başında 5 blok kazan. 5 blok kazan.', 'Enter <span class="kw">Bear Form</span>: gain 5 Block each turn. Gain 5 Block.')
+    : L('<span class="kw">Ayı Formu</span>na gir: tur başında 3 blok kazan. 3 blok kazan.', 'Enter <span class="kw">Bear Form</span>: gain 3 Block each turn. Gain 3 Block.'),
+}));
+C('entanglingRoots', DR, 'starter', 'leaf', 'Dolanan Kökler', 'Entangling Roots', (u) => atk(1, 4, [D(v(u, 3, 5), { fx: 'vine' }), S('root', v(u, 1, 2))]));
+C('wolfForm', DR, 'common', 'wolf', 'Kurt Formu', 'Wolf Form', (u) => skl(1, [CUSTOM('shiftWolf'), MP(1), ...(u ? [DRAW(1)] : [])], {
+  desc: u
+    ? L('<span class="kw">Kurt Formu</span>na gir: her tur +1 hareket, saldırılar +2 hasar. 1 hareket kazan. 1 kart çek.', 'Enter <span class="kw">Wolf Form</span>: +1 movement each turn, attacks +2 damage. Gain 1 movement. Draw 1.')
+    : L('<span class="kw">Kurt Formu</span>na gir: her tur +1 hareket, saldırılar +2 hasar. 1 hareket kazan.', 'Enter <span class="kw">Wolf Form</span>: +1 movement each turn, attacks +2 damage. Gain 1 movement.'),
+}));
+C('owlForm', DR, 'common', 'eye', 'Baykuş Formu', 'Owl Form', (u) => skl(v(u, 1, 0), [CUSTOM('shiftOwl'), DRAW(1)], {
+  desc: L('<span class="kw">Baykuş Formu</span>na gir: her tur 1 fazla kart çek. 1 kart çek.', 'Enter <span class="kw">Owl Form</span>: draw 1 extra card each turn. Draw 1 card.'),
+}));
+C('maul', DR, 'common', 'claw', 'Parçalama', 'Maul', (u) => atk(1, 1, [D(v(u, 8, 11), { fx: 'slash' }), IF({ c: 'selfHas', s: 'bearForm' }, [B(v(u, 4, 6))])]));
+C('pounce', DR, 'common', 'wolf', 'Atılma', 'Pounce', (u) => atk(1, 3, [DASH(2), D(v(u, 5, 7), { fx: 'slash' }), IF({ c: 'selfHas', s: 'wolfForm' }, [DRAW(1)])]));
+C('thornVolley', DR, 'common', 'spikes', 'Diken Yağmuru', 'Thorn Volley', (u) => atk(1, 4, [D(v(u, 3, 4), { times: 2, fx: 'knife' })]));
+C('rejuvenate', DR, 'common', 'heart', 'Canlanma', 'Rejuvenate', (u) => skl(1, [SELF('regen', v(u, 3, 5)), B(3)]));
+C('vineLash', DR, 'common', 'leaf', 'Sarmaşık Kamçısı', 'Vine Lash', (u) => atk(1, 4, [PULL(2), D(v(u, 5, 7), { fx: 'vine' })]));
+C('swipe', DR, 'common', 'claw', 'Savuruş', 'Swipe', (u) => atk(1, 0, [D(v(u, 5, 7), { to: 'adjacent', fx: 'slash' })], { target: 'none' }));
+C('summonTreant', DR, 'uncommon', 'tree', 'Ağaç Muhafız', 'Treant', (u) => skl(v(u, 2, 1), [SUMMON('treant')], { target: 'empty', range: 2 }));
+C('moonfire', DR, 'uncommon', 'moon', 'Ay Ateşi', 'Moonfire', (u) => atk(1, 5, [D(v(u, 7, 10), { fx: 'holy' }), IF({ c: 'selfHas', s: 'owlForm' }, [DRAW(1)])]));
+C('naturesGrasp', DR, 'uncommon', 'leaf', 'Doğanın Pençesi', "Nature's Grasp", (u) => skl(1, [S('root', 1, 'all'), SELF('thorns', v(u, 2, 3))]));
+C('feralInstinct', DR, 'uncommon', 'claw', 'Yabani İçgüdü', 'Feral Instinct', (u) => pwr(v(u, 1, 0), [SELF('feral', 1)]));
+C('thickHide', DR, 'uncommon', 'bear', 'Kalın Post', 'Thick Hide', (u) => skl(2, [B(v(u, 12, 16)), IF({ c: 'selfHas', s: 'bearForm' }, [SELF('retainBlock', 1)])]));
+C('wildGrowth', DR, 'uncommon', 'leaf', 'Yabani Büyüme', 'Wild Growth', (u) => skl(1, [HEAL(3), { k: 'heal', n: 3, to: 'allies' }, SELF('regen', v(u, 2, 3))]));
+C('ancientProtector', DR, 'rare', 'tree', 'Kadim Koruyucu', 'Ancient Protector', (u) => skl(v(u, 3, 2), [SUMMON('ancientTreant')], { target: 'empty', range: 2, exhaust: true }));
+C('primalFury', DR, 'rare', 'claw', 'İlkel Öfke', 'Primal Fury', (u) => pwr(v(u, 2, 1), [SELF('primal', 1)]));
+C('hurricane', DR, 'rare', 'whirl', 'Kasırga', 'Hurricane', (u) => atk(2, 0, [D(v(u, 3, 4), { to: 'all', times: 3, fx: 'wind' })], { target: 'none' }));
+
+/* ============================================================ BARBARIAN */
+const BRB = 'barbarian';
+C('axeSwing', BRB, 'starter', 'axe', 'Balta Savuruşu', 'Axe Swing', (u) => atk(1, 1, [D(v(u, 7, 10), { fx: 'slash' }), SELF('fury', 1)]));
+C('hideArmor', BRB, 'starter', 'shield', 'Post Zırh', 'Hide Armor', (u) => skl(1, [B(v(u, 6, 9))]));
+C('leap', BRB, 'starter', 'boot', 'Sıçrayış', 'Leap', (u) => atk(1, 3, [{ k: 'moveTo' }, D(v(u, 7, 9), { to: 'near', radius: 1, fx: 'slam' }), SELF('fury', 1)], { target: 'empty', range: 3 }));
+C('rampage', BRB, 'starter', 'axe', 'Taşkınlık', 'Rampage', (u) => atk(1, 1, [CUSTOM('furyStrike', v(u, 6, 8), v(u, 4, 5))], {
+  desc: u
+    ? L('Tüm Öfkeni harca: 8 + Öfke başına 5 hasar ver.', 'Spend all Fury: deal 8 + 5 per Fury damage.')
+    : L('Tüm Öfkeni harca: 6 + Öfke başına 4 hasar ver.', 'Spend all Fury: deal 6 + 4 per Fury damage.'),
+}));
+C('recklessSwing', BRB, 'common', 'axe', 'Pervasız Vuruş', 'Reckless Swing', (u) => atk(1, 1, [{ k: 'loseHp', n: 2 }, D(v(u, 12, 16), { fx: 'impact' }), SELF('fury', 1)]));
+C('warStomp', BRB, 'common', 'quake', 'Savaş Tepinmesi', 'War Stomp', (u) => atk(1, 0, [D(v(u, 4, 6), { to: 'near', radius: 1, fx: 'slam' }), PUSH(1, 'near', { radius: 1 }), SELF('fury', 1)], { target: 'none' }));
+C('bellow', BRB, 'common', 'roar', 'Böğürme', 'Bellow', (u) => skl(1, [SELF('fury', v(u, 3, 4)), B(3)]));
+C('doubleChop', BRB, 'common', 'axe', 'Çifte Balta', 'Double Chop', (u) => atk(1, 1, [D(v(u, 4, 5), { times: 2, fx: 'slash' }), SELF('fury', 1)]));
+C('brace', BRB, 'common', 'shield', 'Diren', 'Brace', (u) => skl(1, [B(v(u, 6, 9)), SELF('fury', 1)]));
+C('hurlAxe', BRB, 'common', 'axe', 'Balta Fırlat', 'Hurl Axe', (u) => atk(1, 4, [D(v(u, 7, 10), { fx: 'axe' })]));
+C('bloodScent', BRB, 'common', 'blood', 'Kan Kokusu', 'Blood Scent', (u) => skl(1, [DRAW(v(u, 2, 3)), SELF('fury', 1)]));
+C('headbutt', BRB, 'common', 'fist', 'Kafa Atma', 'Headbutt', (u) => atk(1, 1, [D(v(u, 6, 8), { fx: 'impact' }), PUSH(1, 'target', { stun: true })]));
+C('unstoppable', BRB, 'uncommon', 'fang', 'Durdurulamaz', 'Unstoppable', (u) => pwr(v(u, 1, 0), [SELF('furyGen', 1)]));
+C('berserk', BRB, 'uncommon', 'blood', 'Çılgınlık', 'Berserk', (u) => skl(0, [{ k: 'loseHp', n: v(u, 4, 3) }, EN(2), SELF('fury', 2)], { exhaust: true }));
+C('whirlingAxes', BRB, 'uncommon', 'whirl', 'Dönen Baltalar', 'Whirling Axes', (u) => atk(2, 0, [D(v(u, 6, 8), { to: 'near', radius: 2, times: 2, fx: 'slash' })], { target: 'none' }));
+C('bloodthirst', BRB, 'uncommon', 'fang', 'Kan Susuzluğu', 'Bloodthirst', (u) => atk(1, 1, [D(v(u, 8, 11), { fx: 'slash', lifesteal: 0.5 })]));
+C('crushingLeap', BRB, 'uncommon', 'boot', 'Ezici Sıçrayış', 'Crushing Leap', (u) => atk(2, 4, [{ k: 'moveTo' }, D(v(u, 10, 14), { to: 'near', radius: 1, fx: 'slam' }), PUSH(1, 'near', { radius: 1 })], { target: 'empty', range: 4 }));
+C('scarsOfBattle', BRB, 'uncommon', 'blood', 'Yaraların Gücü', 'Scars of Battle', (u) => skl(1, [CUSTOM('furyFromMissing', 0), B(v(u, 5, 8))], {
+  desc: u
+    ? L('Her 10 eksik can için 1 Öfke kazan. 8 blok kazan.', 'Gain 1 Fury per 10 missing HP. Gain 8 Block.')
+    : L('Her 10 eksik can için 1 Öfke kazan. 5 blok kazan.', 'Gain 1 Fury per 10 missing HP. Gain 5 Block.'),
+}));
+C('unleashedFury', BRB, 'rare', 'axe', 'Serbest Öfke', 'Unleashed Fury', (u) => atk(2, 1, [CUSTOM('furyStrike', v(u, 10, 14), v(u, 5, 6))], {
+  desc: u
+    ? L('Tüm Öfkeni harca: 14 + Öfke başına 6 hasar ver.', 'Spend all Fury: deal 14 + 6 per Fury damage.')
+    : L('Tüm Öfkeni harca: 10 + Öfke başına 5 hasar ver.', 'Spend all Fury: deal 10 + 5 per Fury damage.'),
+}));
+C('warlordsRoar', BRB, 'rare', 'roar', 'Savaş Beyi Kükremesi', "Warlord's Roar", (u) => skl(1, [SELF('strength', v(u, 2, 3)), SELF('fury', 3)], { exhaust: true }));
+C('titanicSlam', BRB, 'rare', 'hammer', 'Dev Çarpması', 'Titanic Slam', (u) => atk(v(u, 3, 2), 2, [D(18, { to: 'area', radius: 1, fx: 'slam' }), PUSH(2, 'area', { radius: 1 })], { target: 'tile' }));
+
+/* =============================================================== PIRATE */
+const PI = 'pirate';
+C('cutlass', PI, 'starter', 'sword', 'Pala', 'Cutlass', (u) => atk(1, 1, [D(v(u, 6, 9), { fx: 'slash' })]));
+C('barrelCover', PI, 'starter', 'barrel', 'Fıçı Siperi', 'Barrel Cover', (u) => skl(1, [B(v(u, 5, 8))]));
+C('flintlock', PI, 'starter', 'pistol', 'Çakmaklı Tabanca', 'Flintlock', (u) => atk(1, 4, [D(v(u, 6, 9), { fx: 'bullet' })]));
+C('plunder', PI, 'starter', 'coin', 'Yağma', 'Plunder', (u) => atk(1, 1, [D(v(u, 4, 6), { fx: 'slash' }), CUSTOM('gold', v(u, 8, 12))], {
+  note: u ? L('12 altın kazan.', 'Gain 12 gold.') : L('8 altın kazan.', 'Gain 8 gold.'),
+}));
+C('grapeshot', PI, 'common', 'explosion', 'Saçma Atışı', 'Grapeshot', (u) => atk(1, 0, [D(v(u, 5, 7), { to: 'line', len: 3, fx: 'bullet' })], { target: 'none' }));
+C('grog', PI, 'common', 'bottle', 'Grog', 'Grog', (u) => skl(0, [SELF('strength', 1), ...(u ? [] : [SELF('weak', 1)]), HEAL(2)], { exhaust: true }));
+C('boardingHook', PI, 'common', 'chain', 'Rampa Kancası', 'Boarding Hook', (u) => atk(1, 4, [PULL(3), D(v(u, 4, 6))]));
+C('dirtyFighting', PI, 'common', 'fist', 'Kirli Dövüş', 'Dirty Fighting', (u) => atk(0, 1, [D(v(u, 3, 5)), S('weak', 1)]));
+C('swashbuckle', PI, 'common', 'sword', 'Kılıç Oyunu', 'Swashbuckle', (u) => atk(1, 1, [D(v(u, 5, 7), { fx: 'slash' }), MP(1), DRAW(1)]));
+C('powderKeg', PI, 'common', 'barrel', 'Barut Fıçısı', 'Powder Keg', (u) => skl(1, [SUMMON(u ? 'barrelUp' : 'barrel')], {
+  target: 'empty',
+  range: 3,
+  note: u ? L('Yok edilince çevresine 14 hasar verir.', 'When destroyed, deals 14 damage around it.') : L('Yok edilince çevresine 10 hasar verir.', 'When destroyed, deals 10 damage around it.'),
+}));
+C('treasureMap', PI, 'common', 'map', 'Hazine Haritası', 'Treasure Map', (u) => skl(1, [DRAW(v(u, 2, 3)), CUSTOM('gold', 5)], { note: L('5 altın kazan.', 'Gain 5 gold.') }));
+C('parry', PI, 'common', 'sword', 'Karşıla', 'Parry', (u) => skl(1, [B(v(u, 5, 8)), SELF('counter', v(u, 3, 4))]));
+C('goldenBullet', PI, 'uncommon', 'coin', 'Altın Kurşun', 'Golden Bullet', (u) => atk(1, 5, [CUSTOM('goldShot', v(u, 6, 9))], {
+  desc: u
+    ? L('9 hasar ver, her 25 altının için +1 (en fazla +20).', 'Deal 9 damage, +1 per 25 gold you have (max +20).')
+    : L('6 hasar ver, her 25 altının için +1 (en fazla +20).', 'Deal 6 damage, +1 per 25 gold you have (max +20).'),
+}));
+C('bribe', PI, 'uncommon', 'coin', 'Rüşvet', 'Bribe', (u) => skl(1, [S('stun', 1)], { target: 'enemy', range: 7, goldCost: v(u, 30, 20), exhaust: true }));
+C('broadsideVolley', PI, 'uncommon', 'cannon', 'Top Ateşi', 'Cannon Fire', (u) => atk(2, 6, [D(v(u, 9, 12), { to: 'area', radius: 1, fx: 'explosion' })], { target: 'tile' }));
+C('parrotFriend', PI, 'uncommon', 'parrot', 'Papağan Dostu', 'Parrot Companion', (u) => skl(1, [SUMMON('parrot')], { target: 'empty', range: 2 }));
+C('seaLegs', PI, 'uncommon', 'anchor', 'Deniz Bacakları', 'Sea Legs', (u) => pwr(v(u, 1, 0), [SELF('haste', 1)]));
+C('doubleBarrel', PI, 'uncommon', 'pistol', 'Çift Namlu', 'Double Barrel', (u) => atk(2, 3, [D(v(u, 8, 10), { times: 2, fx: 'bullet' })]));
+C('captainsHoard', PI, 'rare', 'chest', 'Kaptanın Hazinesi', "Captain's Hoard", (u) => pwr(v(u, 2, 1), [SELF('hoard', 10)]));
+C('broadside', PI, 'rare', 'cannon', 'Borda Ateşi', 'Broadside', (u) => atk(v(u, 3, 2), 0, [D(12, { to: 'all', fx: 'explosion' })], { target: 'none' }));
+C('walkThePlank', PI, 'rare', 'anchor', 'Tahtaya Yürüt', 'Walk the Plank', (u) => atk(1, 1, [D(v(u, 6, 9)), PUSH(4, 'target', { stun: true })]));
+
+/* =========================================================== RUNEMASTER */
+const RU = 'runemaster';
+C('runeBolt', RU, 'starter', 'rune', 'Rün Oku', 'Rune Bolt', (u) => atk(1, 4, [D(v(u, 5, 8), { fx: 'arcane' })]));
+C('runeWard', RU, 'starter', 'rune', 'Rün Kalkanı', 'Rune Ward', (u) => skl(1, [B(v(u, 5, 8))]));
+C('fireRune', RU, 'starter', 'rune', 'Ateş Rünü', 'Fire Rune', (u) => skl(v(u, 1, 0), [SELF('runeFire', 1), DRAW(1)]), { tint: '#ff8a2a' });
+C('frostRune', RU, 'starter', 'rune', 'Buz Rünü', 'Frost Rune', (u) => skl(1, [SELF('runeFrost', 1), B(v(u, 3, 6))]), { tint: '#8fe3ff' });
+C('stormRune', RU, 'common', 'rune', 'Fırtına Rünü', 'Storm Rune', (u) => skl(v(u, 1, 0), [SELF('runeStorm', 1), DRAW(1)]), { tint: '#ffe066' });
+C('glyphStrike', RU, 'common', 'rune', 'Glif Vuruşu', 'Glyph Strike', (u) => atk(1, 1, [D({ b: v(u, 4, 6), per: 'runes', m: 2 }, { fx: 'arcane' })]));
+C('runicShield', RU, 'common', 'shield', 'Rünlü Siper', 'Runic Bulwark', (u) => skl(1, [B({ b: v(u, 4, 7), per: 'runes', m: 2 })]));
+C('etch', RU, 'common', 'rune', 'Kazıma', 'Etch', (u) => skl(0, [CUSTOM('randomRune', v(u, 1, 2))], {
+  desc: u ? L('2 rastgele rün kazan.', 'Gain 2 random runes.') : L('1 rastgele rün kazan.', 'Gain 1 random rune.'),
+}));
+C('runeFlow', RU, 'common', 'book', 'Rün Akışı', 'Rune Flow', (u) => skl(1, [DRAW(v(u, 2, 3))]));
+C('runeSpark', RU, 'common', 'spark', 'Rün Kıvılcımı', 'Rune Spark', (u) => atk(0, 3, [D(v(u, 3, 5), { fx: 'lightning' }), IF({ c: 'selfHas', s: 'runeStorm' }, [D(3, { fx: 'lightning' })])]));
+C('sigilBlast', RU, 'common', 'explosion', 'Mühür Patlaması', 'Sigil Blast', (u) => atk(1, 4, [D(v(u, 5, 7), { to: 'area', radius: 1, fx: 'arcane' })], { target: 'tile' }));
+C('earthGlyph', RU, 'common', 'rune', 'Toprak Glifi', 'Earth Glyph', (u) => skl(1, [B(v(u, 6, 9)), S('root', 1, 'adjacent')]));
+C('invokeRunes', RU, 'uncommon', 'rune', 'Rün Çağrısı', 'Invoke Runes', (u) => atk(1, 4, [CUSTOM('invoke', v(u, 5, 7))], {
+  desc: u ? L('Tüm rünlerini harca: rün başına 7 hasar ver.', 'Spend all runes: deal 7 damage per rune.') : L('Tüm rünlerini harca: rün başına 5 hasar ver.', 'Spend all runes: deal 5 damage per rune.'),
+}));
+C('runicMastery', RU, 'uncommon', 'rune', 'Rün Ustalığı', 'Runic Mastery', (u) => pwr(v(u, 2, 1), [SELF('runeAmp', 1)]));
+C('overload', RU, 'uncommon', 'lightning', 'Aşırı Yük', 'Overload', (u) => skl(v(u, 1, 0), [CUSTOM('allRunes')], {
+  exhaust: true,
+  desc: L('Her türden 1 rün kazan. Tükenir.', 'Gain 1 rune of each type. Exhaust.'),
+}));
+C('chainSigil', RU, 'uncommon', 'chain', 'Zincir Mühür', 'Chain Sigil', (u) => atk(1, 4, [D(v(u, 6, 8), { fx: 'lightning' }), CUSTOM('chain', v(u, 6, 8))], {
+  desc: u
+    ? L('Hedefe ve ona bitişik düşman zincirine 8 hasar ver.', 'Deal 8 damage to the target and every enemy chained next to it.')
+    : L('Hedefe ve ona bitişik düşman zincirine 6 hasar ver.', 'Deal 6 damage to the target and every enemy chained next to it.'),
+}));
+C('frostSeal', RU, 'uncommon', 'ice', 'Ayaz Mührü', 'Frost Seal', (u) => skl(1, [S('root', 2), S('weak', 1), IF({ c: 'selfHas', s: 'runeFrost' }, [S('vulnerable', v(u, 1, 2))])], { target: 'enemy', range: 5 }));
+C('stormCrown', RU, 'uncommon', 'crown', 'Fırtına Tacı', 'Storm Crown', (u) => atk(2, 0, [D(v(u, 5, 7), { to: 'all', fx: 'lightning' }), SELF('runeStorm', 1)], { target: 'none' }));
+C('worldRune', RU, 'rare', 'rune', 'Dünya Rünü', 'World Rune', (u) => pwr(v(u, 3, 2), [SELF('runeGen', 1)]));
+C('runeDetonation', RU, 'rare', 'explosion', 'Rün İnfilakı', 'Rune Detonation', (u) => atk(2, 0, [CUSTOM('invokeAll', v(u, 6, 8))], {
+  target: 'none',
+  desc: u
+    ? L('Tüm rünlerini harca: tüm düşmanlara rün başına 8 hasar ver.', 'Spend all runes: deal 8 damage per rune to ALL enemies.')
+    : L('Tüm rünlerini harca: tüm düşmanlara rün başına 6 hasar ver.', 'Spend all runes: deal 6 damage per rune to ALL enemies.'),
+}));
+C('deepCarving', RU, 'rare', 'rune', 'Derin Oyma', 'Deep Carving', (u) => pwr(v(u, 1, 0), [SELF('runeCap', 2), CUSTOM('allRunes')], {
+  desc: L('Her rünün üst sınırı 2 artar. Her türden 1 rün kazan.', 'Each rune type can hold 2 more. Gain 1 rune of each type.'),
+}));
+
+/* =============================================================== WARDEN */
+const WA = 'warden';
+C('spearThrust', WA, 'starter', 'spear', 'Mızrak Dürtmesi', 'Spear Thrust', (u) => atk(1, 2, [D(v(u, 7, 10), { fx: 'slash' })]));
+C('towerShield', WA, 'starter', 'shield', 'Kule Kalkanı', 'Tower Shield', (u) => skl(1, [B(v(u, 6, 9))]));
+C('chainPull', WA, 'starter', 'chain', 'Zincir', 'Chain Pull', (u) => atk(1, 4, [PULL(3), D(v(u, 5, 7)), S('weak', 1)]));
+C('shieldToss', WA, 'starter', 'shield', 'Kalkan Fırlat', 'Shield Toss', (u) => atk(1, 3, [D(v(u, 6, 8), { fx: 'rock' }), B(v(u, 5, 7))]));
+C('standGuard', WA, 'common', 'spear', 'Nöbet Tut', 'Stand Guard', (u) => skl(1, [B(v(u, 6, 9)), SELF('vigil', 1)]));
+C('spearSweep', WA, 'common', 'spear', 'Mızrak Süpürmesi', 'Spear Sweep', (u) => atk(1, 0, [D(v(u, 5, 7), { to: 'near', radius: 2, fx: 'slash' })], { target: 'none' }));
+C('holdTheLine', WA, 'common', 'wall', 'Hattı Koru', 'Hold the Line', (u) => skl(1, [B(v(u, 5, 7)), SELF('retainBlock', 1)]));
+C('impale', WA, 'common', 'spear', 'Şişle', 'Impale', (u) => atk(1, 2, [D(v(u, 5, 7), { fx: 'slash' }), S('root', 1)]));
+C('provoke', WA, 'common', 'eye', 'Kışkırt', 'Provoke', (u) => skl(0, [PULL(2), S('weak', 1)], { target: 'enemy', range: 5 }));
+C('bulwarkBash', WA, 'common', 'shield', 'Siper Darbesi', 'Bulwark Bash', (u) => atk(1, 1, [D(v(u, 5, 7), { fx: 'impact' }), PUSH(2), B(3)]));
+C('watchfulEye', WA, 'common', 'eye', 'Gözcü Bakışı', 'Watchful Eye', (u) => skl(1, [DRAW(2), B(v(u, 3, 5))]));
+C('fortify', WA, 'common', 'wall', 'Tahkim', 'Fortify', (u) => skl(2, [B(v(u, 12, 16))]));
+C('vigilance', WA, 'uncommon', 'spear', 'Uyanıklık', 'Vigilance', (u) => pwr(1, [SELF('vigil', v(u, 2, 3))]));
+C('spikedShield', WA, 'uncommon', 'spikes', 'Dikenli Kalkan', 'Spiked Shield', (u) => pwr(1, [SELF('thorns', v(u, 2, 3)), SELF('vigil', 1)]));
+C('zoneOfControl', WA, 'uncommon', 'chain', 'Kontrol Bölgesi', 'Zone of Control', (u) => skl(1, [S('root', 1, 'near', { radius: 2 }), B(v(u, 4, 6))]));
+C('spearWall', WA, 'uncommon', 'spear', 'Mızrak Duvarı', 'Spear Wall', (u) => atk(2, 3, [D(v(u, 9, 12), { to: 'line', len: 3, fx: 'slash' }), PUSH(1, 'line')]));
+C('reassurance', WA, 'uncommon', 'heart', 'Güvence', 'Reassurance', (u) => skl(1, [HEAL(v(u, 4, 6)), B(4)], { exhaust: true }));
+C('guardianSpirit', WA, 'uncommon', 'soul', 'Koruyucu Ruh', 'Guardian Spirit', (u) => skl(1, [SELF('dodge', 1), B(v(u, 5, 7))]));
+C('unbreakableWall', WA, 'rare', 'wall', 'Kırılmaz Sur', 'Unbreakable Wall', (u) => pwr(v(u, 3, 2), [SELF('bastion', 1)]));
+C('judgmentSpear', WA, 'rare', 'spear', 'Hüküm Mızrağı', 'Spear of Judgment', (u) => atk(2, 3, [D({ b: v(u, 8, 12), per: 'block', m: 1 }, { fx: 'holy' })]));
+C('wardensVow', WA, 'rare', 'spear', 'Muhafız Yemini', "Warden's Vow", (u) => skl(1, [SELF('vigil', v(u, 4, 6))], { exhaust: true }));
+
+/* ============================================================== CULTIST */
+const CU = 'cultist';
+C('ritualDagger', CU, 'starter', 'dagger', 'Ayin Hançeri', 'Ritual Dagger', (u) => atk(1, 1, [D(v(u, 6, 9), { fx: 'slash' }), S('doom', v(u, 2, 3))]));
+C('darkVeil', CU, 'starter', 'cloak', 'Karanlık Örtü', 'Dark Veil', (u) => skl(1, [B(v(u, 6, 9))]));
+C('whisperOfDoom', CU, 'starter', 'skull', 'Kıyamet Fısıltısı', 'Whisper of Doom', (u) => skl(1, [S('doom', v(u, 9, 13))], { target: 'enemy', range: 4 }));
+C('bloodPrice', CU, 'starter', 'blood', 'Kan Bedeli', 'Blood Price', (u) => skl(0, [EN(1), DRAW(v(u, 1, 2))], { hpCost: 3 }));
+C('hemorrhage', CU, 'common', 'blood', 'Kan Seli', 'Hemorrhage', (u) => atk(1, 3, [D(v(u, 10, 14), { fx: 'blood' })], { hpCost: 2 }));
+C('curseOfFrailty', CU, 'common', 'eye', 'Zayıflık Laneti', 'Curse of Frailty', (u) => skl(1, [S('weak', v(u, 2, 3)), S('doom', 3)], { target: 'enemy', range: 4 }));
+C('tentacleCall', CU, 'common', 'tentacle', 'Dokunaç', 'Tentacle', (u) => skl(1, [SUMMON('tentacle')], {
+  target: 'empty',
+  range: 3,
+  note: L('Dokunaç vurduğu düşmana 2 Kıyamet uygular.', 'The tentacle applies 2 Doom to enemies it hits.'),
+}));
+C('markedForDeath', CU, 'common', 'target', 'Ölüme Adanmış', 'Marked for Death', (u) => atk(1, 4, [D(v(u, 4, 6), { fx: 'soul' }), S('doom', v(u, 4, 6))]));
+C('sacrifice', CU, 'common', 'blood', 'Kurban', 'Sacrifice', (u) => skl(0, [EN(2)], { hpCost: v(u, 5, 4), exhaust: true }));
+C('shadowGrasp', CU, 'common', 'tentacle', 'Gölge Kavrayışı', 'Shadow Grasp', (u) => skl(1, [PULL(2), S('doom', v(u, 3, 5))], { target: 'enemy', range: 5 }));
+C('bloodShield', CU, 'common', 'blood', 'Kan Kalkanı', 'Blood Shield', (u) => skl(1, [B(v(u, 10, 14))], { hpCost: 2 }));
+C('darkChant', CU, 'common', 'skull', 'Karanlık İlahi', 'Dark Chant', (u) => skl(1, [S('doom', v(u, 3, 4), 'all')]));
+C('voidRite', CU, 'uncommon', 'skull', 'Boşluk Ayini', 'Void Rite', (u) => pwr(v(u, 2, 1), [SELF('doomAura', 2)]));
+C('reapDoom', CU, 'uncommon', 'scythe', 'Kıyamet Hasadı', 'Reap Doom', (u) => atk(1, 4, [CUSTOM('doomStrike', v(u, 0, 4))], {
+  desc: u
+    ? L('Hedefin Kıyametini tüket: o kadar + 4 hasar ver.', "Consume the target's Doom: deal that much + 4 damage.")
+    : L('Hedefin Kıyametini tüket: o kadar hasar ver.', "Consume the target's Doom: deal that much damage."),
+}));
+C('bloodFrenzy', CU, 'uncommon', 'blood', 'Kanlı Güç', 'Blood Frenzy', (u) => skl(1, [SELF('strength', v(u, 2, 3))], { hpCost: 3, exhaust: true }));
+C('eldritchBlast', CU, 'uncommon', 'tentacle', 'Kadim Patlama', 'Eldritch Blast', (u) => atk(2, 5, [D(v(u, 8, 11), { to: 'area', radius: 1, fx: 'soul' }), S('doom', 3, 'area', { radius: 1 })], { target: 'tile' }));
+C('bloodRite', CU, 'uncommon', 'drain', 'Kan Emici Ayin', 'Blood Rite', (u) => atk(1, 2, [D(v(u, 6, 9), { fx: 'soul', lifesteal: 1 })]));
+C('twistedPact', CU, 'uncommon', 'eye', 'Çarpık Pakt', 'Twisted Pact', (u) => pwr(v(u, 1, 0), [SELF('painDraw', 1)]));
+C('apocalypse', CU, 'rare', 'skull', 'Kıyamet Günü', 'Apocalypse', (u) => skl(v(u, 3, 2), [CUSTOM('doomMult', 2)], {
+  exhaust: true,
+  desc: L('Tüm düşmanların Kıyametini ikiye katla. Tükenir.', "Double every enemy's Doom. Exhaust."),
+}));
+C('oldOneWakes', CU, 'rare', 'tentacle', 'Kadim Uyanış', 'The Old One Wakes', (u) => pwr(v(u, 3, 2), [SELF('eldritch', 1)]));
+C('bloodMoon', CU, 'rare', 'moon', 'Kanlı Ay', 'Blood Moon', (u) => skl(0, [EN(3)], { hpCost: v(u, 6, 4), exhaust: true }));
+
 /* ============================================================== NEUTRAL */
 const X = 'neutral';
 C('quickStep', X, 'common', 'boot', 'Hızlı Adım', 'Quick Step', (u) => skl(0, [MP(v(u, 1, 2)), DRAW(1)]));

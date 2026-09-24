@@ -1,8 +1,14 @@
-@import '@fontsource/pixelify-sans/400.css';
-@import '@fontsource/pixelify-sans/600.css';
-@import '@fontsource/pixelify-sans/700.css';
-@import '@fontsource/nunito/600.css';
-@import '@fontsource/nunito/800.css';
+/* only the Latin + Latin Extended subsets are needed (Turkish + English) */
+@import '@fontsource/pixelify-sans/latin-400.css';
+@import '@fontsource/pixelify-sans/latin-ext-400.css';
+@import '@fontsource/pixelify-sans/latin-600.css';
+@import '@fontsource/pixelify-sans/latin-ext-600.css';
+@import '@fontsource/pixelify-sans/latin-700.css';
+@import '@fontsource/pixelify-sans/latin-ext-700.css';
+@import '@fontsource/nunito/latin-600.css';
+@import '@fontsource/nunito/latin-ext-600.css';
+@import '@fontsource/nunito/latin-800.css';
+@import '@fontsource/nunito/latin-ext-800.css';
 
 :root {
   --bg: #120c18;
@@ -260,6 +266,7 @@ h3 {
 
 /* ------------------------------------------------------------------ title */
 .title-screen {
+  overflow: hidden;
   justify-content: space-between;
   align-items: center;
   padding: 24px 20px 32px;
@@ -286,13 +293,15 @@ h3 {
 }
 .logo .heroes {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 4px;
-  margin-top: 26px;
+  gap: 2px 6px;
+  margin: 22px auto 0;
+  max-width: 340px;
 }
 .logo .heroes img {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   animation: bob 1.6s ease-in-out infinite;
 }
 @keyframes bob {
@@ -446,9 +455,9 @@ h3 {
 }
 .class-tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  padding: 8px 12px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 5px;
+  padding: 6px 12px;
 }
 .class-tab {
   aspect-ratio: 1;
@@ -460,8 +469,8 @@ h3 {
   position: relative;
 }
 .class-tab img {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
 }
 .class-tab.sel {
   border-color: var(--gold);
@@ -1630,5 +1639,154 @@ input[type='range'] {
   }
   .relicbar {
     min-height: 28px;
+  }
+}
+
+.card .soul.hpcost {
+  background: #a3192f;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+}
+.card .soul.goldcost {
+  background: radial-gradient(circle at 35% 35%, #fff6b0, #d4a017 60%, #8a6a0a);
+  color: #2a1406;
+}
+#app img {
+  max-width: none;
+}
+
+/* ---------------------------------------------------------------- polish */
+.particle {
+  position: absolute;
+  pointer-events: none;
+  image-rendering: pixelated;
+  box-shadow: 0 0 4px currentColor;
+  z-index: 25;
+}
+.bossbar {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 8px;
+  z-index: 12;
+  pointer-events: none;
+}
+.bossbar .bb-name {
+  font-family: var(--pixel);
+  font-size: 16px;
+  color: #ff9a8a;
+  text-align: center;
+  text-shadow: 0 2px 0 #000, 0 0 10px #ff3d3d88;
+  letter-spacing: 1px;
+}
+.bossbar .bb-track {
+  position: relative;
+  height: 14px;
+  margin-top: 3px;
+  background: #1a0a10;
+  border: 2px solid #000;
+  outline: 1px solid #8a3a3a;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bossbar .bb-fill,
+.bossbar .bb-lag {
+  position: absolute;
+  inset: 0;
+  right: auto;
+}
+.bossbar .bb-lag {
+  background: #ffffffaa;
+  transition: width 0.7s 0.2s;
+}
+.bossbar .bb-fill {
+  background: repeating-linear-gradient(90deg, #ff5d3d 0 6px, #e0432a 6px 12px);
+  transition: width 0.3s;
+}
+.bossbar .bb-text {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+  font-size: 10px;
+  line-height: 10px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 0 #000;
+}
+.card .gem {
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: calc(var(--cw) * 0.11);
+  height: calc(var(--cw) * 0.11);
+  transform: translateX(-50%) rotate(45deg);
+  border: 1px solid #0008;
+  z-index: 2;
+}
+.card .gem.common {
+  background: #a4adbf;
+}
+.card .gem.uncommon {
+  background: #6fc3ff;
+  box-shadow: 0 0 4px #6fc3ff;
+}
+.card .gem.rare {
+  background: #ffd35a;
+  box-shadow: 0 0 6px #ffd35a;
+}
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 6px;
+  border: 1px solid #ffffff1a;
+  pointer-events: none;
+}
+.card .art::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: repeating-linear-gradient(45deg, #ffffff08 0 3px, #0000 3px 6px);
+}
+.ember {
+  position: absolute;
+  bottom: -10px;
+  width: 3px;
+  height: 3px;
+  background: #ffb347;
+  box-shadow: 0 0 6px #ff8a2a;
+  pointer-events: none;
+  animation: ember linear infinite;
+}
+@keyframes ember {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx, 20px), -110vh);
+    opacity: 0;
+  }
+}
+.map-hero {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  margin: -58px 0 0 -17px;
+  z-index: 3;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 0 #000a);
+  animation: bob 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ember,
+  .map-hero,
+  .unit.idle .spr img,
+  .intent,
+  .mnode.avail {
+    animation: none !important;
   }
 }

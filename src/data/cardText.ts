@@ -145,7 +145,9 @@ function effText(e: Effect, ctx: Ctx): string {
       if (e.to === 'allies') return T ? `Yardımcıların ${valText(e.n)} can iyileşir.` : `Heal allies ${valText(e.n)} HP.`;
       return T ? `${valText(e.n)} can iyileş.` : `Heal ${valText(e.n)} HP.`;
     case 'moveTo':
-      return ctx.spec.target === 'move' ? (T ? 'Seçilen kareye yürü.' : 'Walk to the chosen tile.') : T ? 'Seçilen kareye ışınlan.' : 'Teleport to the chosen tile.';
+      if (ctx.spec.target === 'move') return T ? 'Seçilen kareye yürü.' : 'Walk to the chosen tile.';
+      if (ctx.spec.type === 'attack') return T ? 'Seçilen kareye sıçra.' : 'Leap to the chosen tile.';
+      return T ? 'Seçilen kareye ışınlan.' : 'Teleport to the chosen tile.';
     case 'dash':
       return T ? `Hedefe doğru ${e.n} kareye kadar atıl.` : `Dash up to ${e.n} tiles toward the target.`;
     case 'retreat':

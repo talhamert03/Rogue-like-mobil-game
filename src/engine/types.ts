@@ -9,7 +9,14 @@ export type ClassId =
   | 'paladin'
   | 'necromancer'
   | 'engineer'
-  | 'monk';
+  | 'monk'
+  | 'shaman'
+  | 'druid'
+  | 'barbarian'
+  | 'pirate'
+  | 'runemaster'
+  | 'warden'
+  | 'cultist';
 
 export type CardType = 'attack' | 'skill' | 'power' | 'curse' | 'status';
 export type Rarity = 'starter' | 'common' | 'uncommon' | 'rare' | 'special';
@@ -54,7 +61,11 @@ export interface Val {
     | 'handSize'
     | 'allies'
     | 'exhausted'
-    | 'missingHp';
+    | 'missingHp'
+    | 'runes'
+    | 'fury'
+    | 'gold'
+    | 'targetDoom';
   m?: number;
 }
 export type Num = number | Val;
@@ -114,6 +125,10 @@ export interface CardSpec {
   unplayable?: boolean;
   soulCost?: number;
   kiCost?: number;
+  /** paid in HP when played */
+  hpCost?: number;
+  /** paid in run gold when played */
+  goldCost?: number;
   /** override automatically generated description */
   desc?: LStr;
   /** append text after generated description */
@@ -257,6 +272,7 @@ export type CEvent =
   | { t: 'play'; card: CardInst; tgt?: number }
   | { t: 'exhaustCard'; card: CardInst }
   | { t: 'energy'; n: number }
+  | { t: 'gold'; n: number }
   | { t: 'intent'; uid: number }
   | { t: 'text'; uid: number; text: LStr; color: string }
   | { t: 'tile'; fx: TileFx; on: boolean }
@@ -340,6 +356,12 @@ export interface AllyDef {
   /** explodes on death */
   explode?: { dmg: number; radius: number };
   passive?: boolean;
+  /** totem pulse performed every ally turn instead of attacking */
+  pulse?: 'fire' | 'heal' | 'storm' | 'earth';
+  /** statuses applied to enemies it hits */
+  applies?: Record<string, number>;
+  flying?: boolean;
+  scale?: number;
 }
 
 /* ------------------------------------------------------------ relics etc */

@@ -37,6 +37,7 @@ export interface RelicDef {
   onHeroMove?: (c: Combat) => void;
   onExhaust?: (c: Combat) => void;
   onTrap?: (c: Combat) => void;
+  onSummon?: (c: Combat, u: Unit) => void;
   atkMod?: (c: Combat, src: Unit, tgt: Unit, d: number) => number;
   /** shows a counter badge */
   counter?: string;
@@ -152,6 +153,95 @@ R({
   name: L('Nefes Tespihi', 'Breath Beads'),
   desc: L('Savaşa 2 Ki ile başla. Bir düşmanı bir şeye çarptırdığında 1 Ki kazan.', 'Start combat with 2 Ki. Gain 1 Ki whenever you slam an enemy into something.'),
   onCombatStart: (c) => c.applyStatus(c.hero, 'ki', 2, c.hero),
+});
+
+R({
+  id: 'spiritDrum',
+  rarity: 'starter',
+  cls: 'shaman',
+  icon: 'drum',
+  tint: '#34c3e0',
+  name: L('Ruh Davulu', 'Spirit Drum'),
+  desc: L('Bir yardımcı çağırdığında 3 blok kazan ve 1 kart çek.', 'Whenever you summon an ally, gain 3 Block and draw 1 card.'),
+  onSummon: (c) => {
+    flash(c, 'spiritDrum');
+    c.gainBlock(c.hero, 3, false);
+    c.drawCards(1);
+  },
+});
+R({
+  id: 'ancientSeed',
+  rarity: 'starter',
+  cls: 'druid',
+  icon: 'leaf',
+  tint: '#8bbf3a',
+  name: L('Kadim Tohum', 'Ancient Seed'),
+  desc: L('Savaşa 2 Yenilenme ile başla. Form değiştirdiğinde 2 blok kazan.', 'Start combat with 2 Regeneration. Whenever you change form, gain 2 Block.'),
+  onCombatStart: (c) => c.applyStatus(c.hero, 'regen', 2, c.hero),
+});
+R({
+  id: 'bloodAxe',
+  rarity: 'starter',
+  cls: 'barbarian',
+  icon: 'axe',
+  tint: '#c0233a',
+  name: L('Kan Baltası', 'Blood Axe'),
+  desc: L('Savaşa 1 Öfke ile başla. Can kaybettiğinde 1 Öfke kazan.', 'Start combat with 1 Fury. Whenever you lose HP, gain 1 Fury.'),
+  onCombatStart: (c) => c.applyStatus(c.hero, 'fury', 1, c.hero),
+  onHeroHpLoss: (c) => {
+    if (c.hero.hp > 0) c.applyStatus(c.hero, 'fury', 1, c.hero);
+  },
+});
+R({
+  id: 'luckyDoubloon',
+  rarity: 'starter',
+  cls: 'pirate',
+  icon: 'coin',
+  tint: '#ffd35a',
+  name: L('Şanslı Dublon', 'Lucky Doubloon'),
+  desc: L('Bir düşman öldürdüğünde 5 altın kazan.', 'Whenever you kill an enemy, gain 5 gold.'),
+  onKill: (c) => {
+    flash(c, 'luckyDoubloon');
+    c.gainGold(5);
+  },
+});
+R({
+  id: 'carvedStone',
+  rarity: 'starter',
+  cls: 'runemaster',
+  icon: 'rune',
+  tint: '#e05aa8',
+  name: L('Oyma Taş', 'Carved Stone'),
+  desc: L('Savaşa 1 Fırtına Rünü ile başla.', 'Start combat with 1 Storm Rune.'),
+  onCombatStart: (c) => c.applyStatus(c.hero, 'runeStorm', 1, c.hero),
+});
+R({
+  id: 'sentinelLantern',
+  rarity: 'starter',
+  cls: 'warden',
+  icon: 'lantern',
+  tint: '#ffcf5a',
+  name: L('Nöbetçi Feneri', 'Sentinel Lantern'),
+  desc: L('Savaşa 3 Nöbet ile başla (tur sonunda bitişik düşmanlara 3 hasar).', 'Start combat with 3 Vigil (deal 3 damage to adjacent enemies at end of turn).'),
+  onCombatStart: (c) => c.applyStatus(c.hero, 'vigil', 3, c.hero),
+});
+R({
+  id: 'sacrificialDagger',
+  rarity: 'starter',
+  cls: 'cultist',
+  icon: 'dagger',
+  tint: '#b8325e',
+  name: L('Kurban Hançeri', 'Sacrificial Dagger'),
+  desc: L('Kendi turunda can kaybettiğinde rastgele bir düşmana 4 Kıyamet uygula.', 'Whenever you lose HP on your turn, apply 4 Doom to a random enemy.'),
+  onHeroHpLoss: (c) => {
+    if (c.s.phase !== 'player') return;
+    const foes = c.enemies();
+    if (!foes.length) return;
+    flash(c, 'sacrificialDagger');
+    c.applyStatus(c.rng.pick(foes), 'doom', 4, c.hero);
+    const pd = c.st(c.hero, 'painDraw');
+    if (pd) c.drawCards(pd);
+  },
 });
 
 /* --------------------------------------------------------------- common */

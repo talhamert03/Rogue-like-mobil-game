@@ -45,6 +45,8 @@ export function cardEl(inst: { id: string; up: boolean }, opts: CardOpts = {}): 
     el.append(h('div', { class: `cost ${costCls}` }, baseCost < 0 ? 'X' : String(cost)));
   }
   if (spec.soulCost) el.append(h('div', { class: 'soul', title: t(STATUSES.souls.name) }, String(spec.soulCost)));
+  if (spec.hpCost) el.append(h('div', { class: 'soul hpcost', html: `<span>${spec.hpCost}</span>` }));
+  if (spec.goldCost) el.append(h('div', { class: 'soul goldcost', html: `<span>${spec.goldCost}</span>` }));
   el.append(h('div', { class: 'name' }, t(def.name) + (inst.up ? '+' : '')));
   const art = h('div', { class: 'art', html: iconImg(def.art, def.tint ?? lighten(color), '') });
   if (spec.type === 'attack' || spec.target === 'enemy' || spec.target === 'tile' || spec.target === 'empty' || spec.target === 'ally') {
@@ -56,6 +58,7 @@ export function cardEl(inst: { id: string; up: boolean }, opts: CardOpts = {}): 
   }
   el.append(art);
   el.append(h('div', { class: 'type' }, t(S.cardTypes[spec.type])));
+  if (def.rarity === 'common' || def.rarity === 'uncommon' || def.rarity === 'rare') el.append(h('div', { class: `gem ${def.rarity}` }));
   el.append(h('div', { class: 'desc', html: `<span>${describeCard(inst.id, inst.up, opts.combat, opts.target)}</span>` }));
   return el;
 }

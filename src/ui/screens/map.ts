@@ -132,6 +132,13 @@ export function mapScreen(app: App): HTMLElement {
     inner.append(h('div', { class: 'px center', style: { position: 'absolute', left: '0', right: '0', top: bossPos.y + 42 + 'px', color: '#ff9a8a', fontSize: '14px' } }, t(bossDef.name)));
     if (ready) scrollTarget = bossPos.y;
   }
+  {
+    const at = cur ? pos(cur.row, cur.col, cur.id) : { x: W / 2, y: H - 6 };
+    const hero = h('img', { class: 'map-hero', src: spriteUrl('hero:' + run.cls), alt: '' });
+    hero.style.left = at.x + 'px';
+    hero.style.top = (cur ? at.y : at.y + 20) + 'px';
+    inner.append(hero);
+  }
   view.append(inner);
   el.append(view);
 

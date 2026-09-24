@@ -6,7 +6,7 @@ Oyun tamamen TypeScript ile yazıldı. Grafikler, sesler ve müzik kod içinde �
 
 ## Özellikler
 
-- **8 kahraman sınıfı**, her birinin kendine özgü mekaniği var:
+- **15 kahraman sınıfı**, her birinin kendine özgü mekaniği var (hepsi baştan açık):
   | Sınıf | Tarz |
   |---|---|
   | Savaşçı | Güç biriktirme, blok, düşmanları duvara itme |
@@ -17,7 +17,14 @@ Oyun tamamen TypeScript ile yazıldı. Grafikler, sesler ve müzik kod içinde �
   | Nekromant | İskelet ve golem çağırma, Ruh toplama/harcama |
   | Mühendis | Taretler, gecikmeli bombalar, patlayan bidonlar, savaş robotu |
   | Keşiş | Ki kombinasyonları, tekmelerle itme, yüksek hareket |
-- **~190 özgün kart** (sınıf kartları, ortak kartlar, lanetler, durum kartları), her kartın geliştirilmiş hali var.
+  | Şaman | Kendiliğinden titreşen ateş/şifa/fırtına/toprak totemleri, şimşek |
+  | Druid | Ayı/kurt/baykuş formları, kökler, ağaç muhafızlar |
+  | Barbar | Öfke biriktirip tek darbede boşaltma, sıçrayarak saldırma |
+  | Korsan | Savaşta altın yağmalama; altını kurşuna ve rüşvete çevirme, papağan |
+  | Rün Ustası | Her tur işleyen ateş/buz/fırtına rünleri, rün patlatma |
+  | Muhafız | 2 kare menzilli mızrak, zincirle çekme, bitişikleri yaralayan Nöbet aurası |
+  | Kültist | Canla bedel ödeme, Kıyamet biriktirip düşmanı infaz etme |
+- **~340 özgün kart** (sınıf kartları, ortak kartlar, lanetler, durum kartları), her kartın geliştirilmiş hali var.
 - **Konumsal savaş sistemi**: 8 karelik koridor, hareket puanı, yakın/menzilli saldırılar, itme ve çekme, çarpışma hasarı, tuzaklar, bombalar, çağrılan yardımcılar.
 - **Düşman niyetleri**: her düşman ne yapacağını önceden gösterir. Alan saldırıları kırmızı karelerle işaretlenir, oradan çekilerek kaçabilirsin.
 - **42 düşman**: 3 perdede normal düşmanlar, elitler ve 6 boss (Mahzen Bekçisi, Fare Kralı, Mantar Ana, Trol Kral, Kül Ejderi, Solgun Hükümdar).

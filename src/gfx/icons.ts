@@ -941,6 +941,17 @@ export const ICONS: Record<string, string[]> = {
     '............',
     '............',
   ],
+  bear: ['............', '.aa......aa.', '.abaaaaaaba.', '..aaaaaaaa..', '.aaekaakeaa.', '.aaaaaaaaaa.', '.aaaccccaaa.', '..aackkcaa..', '...aaccaa...', '....aaaa....', '............', '............'],
+  drum: ['............', '.n........n.', '..n......n..', '..wwwwwwww..', '.wllllllllw.', '.aaaaaaaaaa.', '.ayayayayaa.', '.aaaaaaaaaa.', '.ayayayayaa.', '.aaaaaaaaaa.', '..bbbbbbbb..', '............'],
+  bottle: ['.....nn.....', '.....ll.....', '.....ll.....', '....laal....', '...laaaal...', '...lacaal...', '...lcaaal...', '...laaaal...', '...laaaal...', '...lbbbbl...', '....llll....', '............'],
+  cannon: ['............', '............', '.......kkkk.', '.....kkkkkkk', '...kkkwkkkkk', '..kkkkkkkk..', '.kkkkkkkk...', '..nnnnnnn...', '.nNNnnnNNn..', '.NnnN..NnnN.', '..NN....NN..', '............'],
+  parrot: ['............', '.....rrr....', '....rrkryy..', '....rrrrry..', '...urrrr....', '..uuyrrr....', '.uuyyrrr....', '..uuyrr.....', '....rrr.....', '.....uu.....', '....u..u....', '............'],
+  anchor: ['.....aa.....', '....a..a....', '.....aa.....', '..aaaaaaaa..', '.....aa.....', '.....aa.....', '.....aa.....', '.a...aa...a.', '.aa..aa..aa.', '..aa.aa.aa..', '...aaaaaa...', '............'],
+  pistol: ['............', '............', '.kkkkkkkkkk.', '.kllllllllk.', '.kkkkkkkkkk.', '.....nnnkk..', '....nnnnk...', '...nnnn.....', '..nnnn......', '..nnn.......', '............', '............'],
+  spear: ['..........w.', '.........wl.', '........wll.', '.......nll..', '......nn....', '.....nn.....', '....nn......', '...nn.......', '..nn........', '.nn.........', 'nn..........', '............'],
+  tentacle: ['.......aa...', '......aaca..', '......abb...', '.....aab....', '.....ab.....', '....aab.....', '....ab......', '....aab.....', '.....aab....', '..kkkaabkk..', '.kkkkkkkkkk.', '............'],
+  tree: ['....gggg....', '..gggGgggg..', '.ggGgggggGg.', '.gggggGgggg.', '..gGgggggg..', '....gnng....', '.....nn.....', '.....nn.....', '.....nn.....', '....nnnn....', '...N....N...', '............'],
+  totem: ['..a......a..', '..aaaaaaaa..', '...akaaka...', '...aaaaaa...', '...akkkka...', '....aaaa....', '...bbbbbb...', '...bayyab...', '...bbbbbb...', '....aaaa....', '...nnnnnn...', '............'],
 };
 
 /** aliases so data can use descriptive names */
@@ -981,7 +992,6 @@ export const ICON_ALIAS: Record<string, string> = {
   grave: 'skull',
   wrench: 'hammer',
   plate: 'shield',
-  pistol: 'turret',
   mine: 'bomb',
   barrel: 'bomb',
   magnet: 'chain',

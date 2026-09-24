@@ -25,6 +25,8 @@ import { POTIONS } from '../data/potions';
 import { DEBUFFS, DURATION_STATUSES } from '../data/statuses';
 
 export const LANE = 8;
+export const RUNES = ['runeFire', 'runeFrost', 'runeStorm'];
+export const FORMS = ['bearForm', 'wolfForm', 'owlForm'];
 export const HAND_MAX = 10;
 const COLLIDE_DMG = 4;
 const MAX_ENEMIES = 6;
@@ -258,6 +260,8 @@ export class Combat {
     if (sp.soulCost && this.st(this.hero, 'souls') < sp.soulCost)
       return { ok: false, reason: L('Yetersiz Ruh', 'Not enough Souls') };
     if (sp.kiCost && this.st(this.hero, 'ki') < sp.kiCost) return { ok: false, reason: L('Yetersiz Ki', 'Not enough Ki') };
+    if (sp.hpCost && this.hero.hp <= sp.hpCost) return { ok: false, reason: L('Yetersiz can', 'Not enough HP') };
+    if (sp.goldCost && this.run.gold < sp.goldCost) return { ok: false, reason: L('Yetersiz altın', 'Not enough gold') };
     if (sp.target !== 'none') {
       const vt = this.validTargets(c);
       if (vt.units.length === 0 && vt.tiles.length === 0)
@@ -353,6 +357,18 @@ export class Combat {
       case 'missingHp':
         src = hero.maxHp - hero.hp;
         break;
+      case 'runes':
+        src = this.runeCount();
+        break;
+      case 'fury':
+        src = this.st(hero, 'fury');
+        break;
+      case 'gold':
+        src = this.run.gold;
+        break;
+      case 'targetDoom':
+        src = ctx.tgt ? this.st(ctx.tgt, 'doom') : 0;
+        break;
       default:
         break;
     }
@@ -372,6 +388,8 @@ export class Combat {
       if (src.side === 'hero') {
         const ss = this.st(src, 'sharpshooter');
         if (ss && this.dist(src, tgt) >= 3) d += ss;
+        d += this.formAttackBonus(src);
+        d += this.st(src, 'runeFire') * (1 + this.st(src, 'runeAmp'));
         for (const id of this.run.relics) {
           const r = RELICS[id];
           if (r?.atkMod) d = r.atkMod(this, src, tgt, d);
@@ -388,7 +406,7 @@ export class Combat {
   heroPreview(base: number, holy: boolean, tgt?: Unit): number {
     const hero = this.hero;
     if (tgt) return this.calcAttack(hero, tgt, base, holy);
-    let d = base + this.st(hero, 'strength') + (holy ? this.st(hero, 'radiance') : 0);
+    let d = base + this.st(hero, 'strength') + (holy ? this.st(hero, 'radiance') : 0) + this.formAttackBonus(hero) + this.st(hero, 'runeFire') * (1 + this.st(hero, 'runeAmp'));
     if (this.st(hero, 'weak')) d *= 0.75;
     return Math.max(0, Math.floor(d));
   }
@@ -458,6 +476,7 @@ export class Combat {
       this.dealDamage(tgt, src, 3, { fx: 'thorns' });
     }
     if (tgt.hp <= 0) this.kill(tgt, src);
+    else this.checkDoom(tgt);
     return loss;
   }
 
@@ -469,6 +488,7 @@ export class Combat {
     if (u.side === 'hero' && loss > 0) this.onHeroHpLoss(loss);
     else if (u.side !== 'hero') this.run.stats.damageDealt += loss;
     if (u.hp <= 0) this.kill(u, null);
+    else this.checkDoom(u);
   }
 
   private onHeroHpLoss(loss: number): void {
@@ -525,10 +545,13 @@ export class Combat {
       return;
     }
     const before = this.st(u, s);
-    const total = before + n;
+    let total = before + n;
+    if (RUNES.includes(s)) total = Math.min(total, 3 + this.st(u, 'runeCap'));
+    if (total === before && n > 0) return;
     if (total <= 0) delete u.st[s];
     else u.st[s] = total;
-    this.emit({ t: 'status', uid: u.uid, s, delta: n, total: this.st(u, s) });
+    this.emit({ t: 'status', uid: u.uid, s, delta: total - before, total: this.st(u, s) });
+    if (s === 'doom' && n > 0) this.checkDoom(u);
     if (s === 'stun' && u.intent && n > 0) {
       u.intent = { move: '__stun', kind: 'stun' };
       this.emit({ t: 'intent', uid: u.uid });
@@ -832,6 +855,7 @@ export class Combat {
     };
     this.s.units.push(u);
     this.emit({ t: 'spawn', uid: u.uid });
+    for (const id of this.run.relics) RELICS[id]?.onSummon?.(this, u);
     return u;
   }
 
@@ -942,6 +966,8 @@ export class Combat {
     }
     if (sp.soulCost) this.applyStatus(this.hero, 'souls', -sp.soulCost);
     if (sp.kiCost) this.applyStatus(this.hero, 'ki', -sp.kiCost);
+    if (sp.goldCost) this.gainGold(-sp.goldCost);
+    if (sp.hpCost) this.loseHp(this.hero, sp.hpCost, 'blood');
     this.s.hand.splice(idx, 1);
     delete card.tc;
     this.emit({ t: 'play', card, tgt: tgt?.uid });
@@ -1388,8 +1414,156 @@ export class Combat {
         this.dealDamage(hero, t, this.calcAttack(hero, t, base), { attack: true, fx: 'lightning', melee: false });
         break;
       }
+      case 'shiftBear':
+      case 'shiftWolf':
+      case 'shiftOwl': {
+        const form = id === 'shiftBear' ? 'bearForm' : id === 'shiftWolf' ? 'wolfForm' : 'owlForm';
+        const had = this.st(hero, form);
+        for (const f of FORMS) if (f !== form && this.st(hero, f)) this.applyStatus(hero, f, -this.st(hero, f));
+        if (!had) this.applyStatus(hero, form, form === 'bearForm' ? Math.max(3, n) : 1, hero);
+        this.emit({ t: 'cast', uid: hero.uid, fx: 'buff' });
+        if (!had) {
+          const feral = this.st(hero, 'feral');
+          if (feral) {
+            this.s.energy += feral;
+            this.emit({ t: 'energy', n: this.s.energy });
+          }
+          if (this.hasRelic('ancientSeed')) {
+            this.relicFlash('ancientSeed');
+            this.gainBlock(hero, 2, false);
+          }
+        }
+        break;
+      }
+      case 'totemPulse':
+        for (const a of this.allies().filter((a) => ALLIES[a.def]?.pulse)) {
+          this.totemPulse(a);
+          if (this.over) break;
+        }
+        break;
+      case 'furyStrike': {
+        const fury = this.st(hero, 'fury');
+        if (fury > 0) this.applyStatus(hero, 'fury', -fury);
+        const t = ctx.tgt;
+        if (t && t.alive) this.dealDamage(hero, t, this.calcAttack(hero, t, n + m * fury), { attack: true, fx: 'impact' });
+        break;
+      }
+      case 'furyFromMissing':
+        this.applyStatus(hero, 'fury', Math.floor((hero.maxHp - hero.hp) / 10) + n, hero);
+        break;
+      case 'gold':
+        this.gainGold(n);
+        break;
+      case 'goldShot': {
+        const t = ctx.tgt;
+        if (!t || !t.alive) break;
+        const bonus = Math.min(20, Math.floor(this.run.gold / 25));
+        this.emit({ t: 'attack', uid: hero.uid, tgt: t.uid, ranged: true, fx: 'bullet' });
+        this.dealDamage(hero, t, this.calcAttack(hero, t, n + bonus), { attack: true, fx: 'bullet', melee: false });
+        break;
+      }
+      case 'randomRune':
+        for (let i = 0; i < Math.max(1, n); i++) this.applyStatus(hero, this.rng.pick(RUNES), 1, hero);
+        break;
+      case 'allRunes':
+        for (const r of RUNES) this.applyStatus(hero, r, 1, hero);
+        break;
+      case 'invoke':
+      case 'invokeAll': {
+        const runes = this.runeCount();
+        for (const r of RUNES) if (this.st(hero, r)) this.applyStatus(hero, r, -this.st(hero, r));
+        if (!runes) break;
+        const targets = id === 'invoke' ? (ctx.tgt && ctx.tgt.alive ? [ctx.tgt] : []) : this.enemies();
+        this.emit({ t: 'area', tiles: targets.map((x) => x.pos), fx: 'crystal' });
+        for (const t of targets) this.dealDamage(hero, t, this.calcAttack(hero, t, n * runes), { attack: true, fx: 'arcane', melee: false });
+        break;
+      }
+      case 'doomStrike': {
+        const t = ctx.tgt;
+        if (!t || !t.alive) break;
+        const doom = this.st(t, 'doom');
+        this.emit({ t: 'attack', uid: hero.uid, tgt: t.uid, ranged: true, fx: 'soul' });
+        if (doom) this.applyStatus(t, 'doom', -doom);
+        this.dealDamage(hero, t, this.calcAttack(hero, t, doom + n), { attack: true, fx: 'soul', melee: false });
+        break;
+      }
+      case 'doomMult':
+        for (const e of this.enemies()) {
+          const d = this.st(e, 'doom');
+          if (d) this.applyStatus(e, 'doom', d * (n - 1), hero);
+        }
+        break;
       default:
         console.warn('unknown custom effect', id);
+    }
+  }
+
+  /* ===================================================== class helpers */
+
+  runeCount(): number {
+    const h = this.hero;
+    return RUNES.reduce((a, r) => a + this.st(h, r), 0);
+  }
+
+  formAttackBonus(u: Unit): number {
+    let d = 0;
+    if (this.st(u, 'wolfForm')) d += 2;
+    if (this.st(u, 'primal') && FORMS.some((f) => this.st(u, f))) d += 3 * this.st(u, 'primal');
+    return d;
+  }
+
+  gainGold(n: number): void {
+    if (n === 0) return;
+    const g = n < 0 ? Math.max(n, -this.run.gold) : n;
+    this.run.gold += g;
+    if (g > 0) this.run.stats.goldEarned += g;
+    this.emit({ t: 'text', uid: this.hero.uid, text: L(`${g > 0 ? '+' : ''}${g} Altın`, `${g > 0 ? '+' : ''}${g} Gold`), color: '#ffd35a' });
+    this.emit({ t: 'gold', n: this.run.gold });
+  }
+
+  /** enemies whose Doom reaches their HP are executed */
+  checkDoom(u: Unit): void {
+    if (!u.alive || u.side !== 'enemy') return;
+    const doom = this.st(u, 'doom');
+    if (doom > 0 && doom >= u.hp) {
+      this.emit({ t: 'text', uid: u.uid, text: L('KIYAMET!', 'DOOMED!'), color: '#ff4d7a' });
+      this.emit({ t: 'area', tiles: [u.pos], fx: 'soul' });
+      u.hp = 0;
+      this.emit({ t: 'dmg', uid: u.uid, amount: doom, blocked: 0, hp: 0, block: u.block, fx: 'soul' });
+      this.kill(u, this.hero);
+    }
+  }
+
+  totemPulse(a: Unit): void {
+    const def = ALLIES[a.def];
+    const hero = this.hero;
+    const str = this.st(a, 'strength');
+    this.emit({ t: 'cast', uid: a.uid, fx: def.pulse === 'heal' ? 'heal' : def.pulse === 'earth' ? 'block' : 'lightning' });
+    switch (def.pulse) {
+      case 'fire': {
+        const foes = this.enemies().filter((e) => this.dist(a, e) <= 2);
+        if (foes.length) this.emit({ t: 'area', tiles: this.tilesAround(a.pos, 2), fx: 'fire' });
+        for (const f of foes) {
+          this.dealDamage(a, f, 3 + str, { fx: 'fire' });
+          if (f.alive) this.applyStatus(f, 'burn', 1, hero);
+        }
+        break;
+      }
+      case 'heal':
+        this.heal(hero, 3);
+        for (const x of this.allies()) if (x.uid !== a.uid) this.heal(x, 2);
+        break;
+      case 'storm': {
+        const foes = this.enemies();
+        if (!foes.length) break;
+        const f = this.rng.pick(foes);
+        this.emit({ t: 'attack', uid: a.uid, tgt: f.uid, ranged: true, fx: 'lightning' });
+        this.dealDamage(a, f, 5 + str, { fx: 'lightning' });
+        break;
+      }
+      case 'earth':
+        this.gainBlock(hero, 4, false);
+        break;
     }
   }
 
@@ -1399,7 +1573,7 @@ export class Combat {
     return this.cls.energy + relicPassive(this.run, 'energy');
   }
   heroMp(): number {
-    return this.cls.mp + relicPassive(this.run, 'mp') + this.st(this.hero, 'haste');
+    return this.cls.mp + relicPassive(this.run, 'mp') + this.st(this.hero, 'haste') + (this.st(this.hero, 'wolfForm') ? 1 : 0);
   }
   heroHand(): number {
     return this.cls.hand + relicPassive(this.run, 'draw');
@@ -1417,7 +1591,7 @@ export class Combat {
     this.emit({ t: 'turn', side: 'player', turn: s.turn });
     // block & temporary statuses
     if (this.st(hero, 'retainBlock')) this.applyStatus(hero, 'retainBlock', -1);
-    else hero.block = 0;
+    else if (!this.st(hero, 'bastion')) hero.block = 0;
     this.emit({ t: 'block', uid: hero.uid, amount: 0, block: hero.block });
     this.clearTemp(hero);
     // poison
@@ -1447,8 +1621,19 @@ export class Combat {
     for (let i = 0; i < lich; i++) this.summonAlly('skeleton', undefined, false);
     const bm = this.st(hero, 'bladeMaster');
     if (bm) this.addCard('throwingKnife', bm, 'hand');
+    const bear = this.st(hero, 'bearForm');
+    if (bear) this.gainBlock(hero, bear, false);
+    const furyGen = this.st(hero, 'furyGen');
+    if (furyGen) this.applyStatus(hero, 'fury', furyGen, hero);
+    const doomAura = this.st(hero, 'doomAura');
+    if (doomAura) for (const e of this.enemies()) this.applyStatus(e, 'doom', doomAura, hero);
+    const runeGen = this.st(hero, 'runeGen');
+    for (let i = 0; i < runeGen; i++) this.applyStatus(hero, this.rng.pick(RUNES), 1, hero);
+    const hoard = this.st(hero, 'hoard');
+    if (hoard) this.gainGold(hoard);
+    if (this.over) return;
     this.relicHook('onTurnStart');
-    this.drawCards(this.heroHand() + (s.turn === 1 ? relicPassive(this.run, 'firstDraw') : 0));
+    this.drawCards(this.heroHand() + (this.st(hero, 'owlForm') ? 1 : 0) + (s.turn === 1 ? relicPassive(this.run, 'firstDraw') : 0));
     // shackles
     const shackles = s.hand.filter((c) => CARDS[c.id]?.inHand === 'shackles').length;
     if (shackles) s.mp = Math.max(0, s.mp - shackles);
@@ -1483,6 +1668,7 @@ export class Combat {
     const ritual = this.st(u, 'ritual');
     if (ritual) this.applyStatus(u, 'strength', ritual, u);
     for (const s of DURATION_STATUSES) if (this.st(u, s)) this.applyStatus(u, s, -1);
+    this.checkDoom(u);
   }
 
   endTurn(): void {
@@ -1510,6 +1696,44 @@ export class Combat {
           this.emit({ t: 'cast', uid: hero.uid, fx: 'holy' });
           for (const f of this.enemies()) this.dealDamage(hero, f, r, { fx: 'holy' });
         }
+    }
+    const amp = 1 + this.st(hero, 'runeAmp');
+    const frost = this.st(hero, 'runeFrost');
+    if (frost) this.gainBlock(hero, 2 * frost * amp, false);
+    const storm = this.st(hero, 'runeStorm');
+    if (storm) {
+      const foes = this.enemies();
+      if (foes.length) {
+        const f = this.rng.pick(foes);
+        this.emit({ t: 'attack', uid: hero.uid, tgt: f.uid, ranged: true, fx: 'lightning' });
+        this.dealDamage(hero, f, 2 * storm * amp, { fx: 'lightning' });
+      }
+    }
+    if (this.over) return;
+    const vigil = this.st(hero, 'vigil');
+    if (vigil) {
+      const adj = this.enemies().filter((e) => this.dist(hero, e) <= 1);
+      if (adj.length) {
+        this.emit({ t: 'cast', uid: hero.uid, fx: 'slash' });
+        for (const e of adj) this.dealDamage(hero, e, vigil, { fx: 'slash' });
+      }
+    }
+    if (this.over) return;
+    const eld = this.st(hero, 'eldritch');
+    if (eld) {
+      this.loseHp(hero, 1, 'blood');
+      if (this.over) return;
+      this.emit({ t: 'area', tiles: this.enemies().map((e) => e.pos), fx: 'soul' });
+      for (const e of this.enemies()) this.dealDamage(hero, e, 6 * eld, { fx: 'soul' });
+    }
+    if (this.over) return;
+    const sc = this.st(hero, 'stormcall');
+    for (let i = 0; i < sc; i++) {
+      const foes = this.enemies();
+      if (!foes.length) break;
+      const f = this.rng.pick(foes);
+      this.emit({ t: 'attack', uid: hero.uid, tgt: f.uid, ranged: true, fx: 'lightning' });
+      this.dealDamage(hero, f, 6, { fx: 'lightning' });
     }
     this.relicHook('onTurnEnd');
     if (this.over) return;
@@ -1591,6 +1815,12 @@ export class Combat {
       this.applyStatus(a, 'stun', -1);
       return;
     }
+    if (def.pulse) {
+      const times = 1 + this.st(this.hero, 'totemEcho');
+      for (let i = 0; i < times && !this.over; i++) this.totemPulse(a);
+      this.endOfTurnStatuses(a);
+      return;
+    }
     if (def.aoe) {
       const targets = this.enemies().filter((e) => this.dist(a, e) <= def.range);
       if (targets.length) {
@@ -1604,8 +1834,9 @@ export class Combat {
         t = this.nearestFoe(a);
       }
       if (t && a.alive && this.dist(a, t) <= def.range) {
-        this.emit({ t: 'attack', uid: a.uid, tgt: t.uid, ranged: def.range > 1 });
+        this.emit({ t: 'attack', uid: a.uid, tgt: t.uid, ranged: def.range > 1, fx: def.range > 1 ? (def.applies?.doom ? 'soul' : 'arrow') : undefined });
         this.dealDamage(a, t, this.calcAttack(a, t, def.dmg), { attack: true, fx: def.range > 1 ? 'arrow' : 'slash' });
+        if (def.applies && t.alive) for (const [st, n] of Object.entries(def.applies)) this.applyStatus(t, st, n, this.hero);
       }
     }
     this.endOfTurnStatuses(a);

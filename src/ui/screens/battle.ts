@@ -179,6 +179,7 @@ export class BattleScreen {
 
   private renderAll(): void {
     this.renderUnits();
+    this.renderBossBar();
     this.renderTiles();
     this.renderHud();
     this.renderHand();
@@ -213,7 +214,7 @@ export class BattleScreen {
     if (u.side === 'hero') return { id: u.def, scale: 1.05, flying: false };
     if (u.side === 'ally') {
       const a = ALLIES[u.def];
-      return { id: a.sprite, palette: a.palette, scale: u.def === 'mech' || u.def === 'boneGolem' ? 1.15 : 0.9, flying: false };
+      return { id: a.sprite, palette: a.palette, scale: a.scale ?? (u.def === 'mech' || u.def === 'boneGolem' ? 1.15 : 0.9), flying: !!a.flying };
     }
     const e = ENEMIES[u.def];
     return { id: e.sprite, palette: e.palette, scale: e.scale ?? 1, flying: !!e.flying };
@@ -460,7 +461,7 @@ export class BattleScreen {
         const sp = c.specOf(card);
         const hint = sp.target === 'none' ? t(S.tapToPlay) : sp.target === 'enemy' || sp.target === 'ally' ? t(S.selectTarget) : t(S.selectTile);
         const hintEl = h('div', { class: 'card-hint' }, hint);
-        hintEl.style.left = `calc(50% + ${x}px)`;
+        hintEl.style.left = `${Math.max(100, Math.min(W - 100, W / 2 + x))}px`;
         hintEl.style.top = '-66px';
         this.hand.append(hintEl);
       }
@@ -766,6 +767,51 @@ export class BattleScreen {
     return { x: r.left - fr.left + r.width / 2, y: r.top - fr.top + r.height / 2 };
   }
 
+  /** pixel particle burst at a unit */
+  private burst(uid: number, color: string, count: number, spread = 42): void {
+    const p = this.unitCenter(uid);
+    if (!p || this.destroyed) return;
+    for (let i = 0; i < count; i++) {
+      const size = 3 + Math.floor(Math.random() * 4);
+      const d = h('div', { class: 'particle', style: { left: p.x + 'px', top: p.y + 'px', width: size + 'px', height: size + 'px', background: i % 3 === 0 ? '#ffffff' : color } });
+      this.fx.append(d);
+      const ang = Math.random() * Math.PI * 2;
+      const dist = spread * (0.4 + Math.random() * 0.8);
+      const dx = Math.cos(ang) * dist;
+      const dy = Math.sin(ang) * dist - 14;
+      void anim(
+        d,
+        [
+          { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.9)`, opacity: 0.9, offset: 0.55 },
+          { transform: `translate(calc(-50% + ${dx * 1.1}px), calc(-50% + ${dy + 26}px)) scale(0.3)`, opacity: 0 },
+        ],
+        520 + Math.random() * 260,
+        { easing: 'cubic-bezier(.2,.8,.4,1)' },
+      ).then(() => d.remove());
+    }
+  }
+
+  private bossBar: HTMLElement | null = null;
+  private bossUid: number | null = null;
+
+  private renderBossBar(): void {
+    const boss = this.c.enemies().find((e) => ENEMIES[e.def]?.tier === 'boss');
+    if (!boss) {
+      this.bossBar?.remove();
+      this.bossBar = null;
+      return;
+    }
+    this.bossUid = boss.uid;
+    if (!this.bossBar) {
+      this.bossBar = h('div', { class: 'bossbar' });
+      this.field.append(this.bossBar);
+    }
+    const v = this.view.get(boss.uid) ?? { hp: boss.hp, maxHp: boss.maxHp, block: boss.block };
+    const pct = Math.max(0, (v.hp / v.maxHp) * 100);
+    this.bossBar.innerHTML = `<div class="bb-name">${t(ENEMIES[boss.def].name)}</div><div class="bb-track"><div class="bb-lag" style="width:${pct}%"></div><div class="bb-fill" style="width:${pct}%"></div><div class="bb-text">${v.hp} / ${v.maxHp}${v.block ? ` · 🛡 ${v.block}` : ''}</div></div>`;
+  }
+
   private floater(uid: number, text: string, color: string, big = false): void {
     const p = this.unitCenter(uid);
     if (!p) return;
@@ -938,9 +984,11 @@ export class BattleScreen {
           void spr.offsetWidth;
           spr.classList.add('hurt');
         }
+        if (e.uid === this.bossUid) this.renderBossBar();
         if (e.amount > 0) {
           const big = e.amount >= 15;
           const color = e.fx === 'poison' ? '#9dff5a' : e.fx === 'fire' ? '#ffab5a' : e.fx === 'blood' ? '#ff5d7a' : '#ff5d5d';
+          this.burst(e.uid, FX_COLOR[e.fx ?? ''] ?? color, big ? 14 : 7, big ? 60 : 40);
           this.floater(e.uid, String(e.amount), color, big);
           audio.sfx(big ? 'heavy' : 'hit');
           if (big) this.shake(2);
@@ -1034,6 +1082,7 @@ export class BattleScreen {
         this.view.delete(e.uid);
         if (el) {
           audio.sfx('death');
+          this.burst(e.uid, '#ffe08a', 16, 70);
           this.unitEls.delete(e.uid);
           await anim(el, [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.6) translateY(10px)', filter: 'brightness(3)' }], 320);
           el.remove();
@@ -1064,6 +1113,10 @@ export class BattleScreen {
       case 'energy':
         this.energyView = e.n;
         this.renderHud();
+        break;
+      case 'gold':
+        audio.sfx('coin');
+        this.refreshTop();
         break;
       case 'intent': {
         const u = this.c.s.units.find((x) => x.uid === e.uid);

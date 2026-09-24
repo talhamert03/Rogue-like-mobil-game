@@ -3,11 +3,35 @@ import { App } from './ui/app';
 import { audio } from './audio/audio';
 import * as runApi from './engine/run';
 import * as gfx from './gfx/render';
+import { storage, KEYS } from './engine/storage';
 
-function boot(): void {
+const ARTIFACT = import.meta.env.VITE_TARGET === 'artifact';
+
+interface HotApi {
+  ready?: (start: (data: HotData) => void) => void;
+  snapshot?: (fn: () => HotData) => void;
+  data?: HotData;
+}
+interface HotData {
+  profile?: string | null;
+  run?: string | null;
+}
+
+function boot(data: HotData = {}): void {
   const root = document.getElementById('app');
   if (!root) return;
+  // restore state handed over by a live page update
+  if (data.profile) storage.set(KEYS.profile, data.profile);
+  if (data.run) storage.set(KEYS.run, data.run);
   const app = new App(root);
+  try {
+    hot()?.snapshot?.(() => {
+      app.save();
+      return { profile: storage.get(KEYS.profile), run: storage.get(KEYS.run) };
+    });
+  } catch {
+    /* not running inside a host that supports live updates */
+  }
   (window as unknown as { __app: App }).__app = app;
   // test/debug hook (used by the automated browser tests)
   (window as unknown as { __dd: unknown }).__dd = runApi;
@@ -25,15 +49,22 @@ function boot(): void {
   });
   window.addEventListener('pagehide', () => app.save());
   void setupNative(app);
-  if ('serviceWorker' in navigator && location.protocol === 'https:' && import.meta.env.PROD) {
+  if (!ARTIFACT && 'serviceWorker' in navigator && location.protocol === 'https:' && import.meta.env.PROD) {
     navigator.serviceWorker.register('./sw.js').catch(() => undefined);
   }
 }
 
-boot();
+function hot(): HotApi | undefined {
+  return (window as unknown as { claude?: { hot?: HotApi } }).claude?.hot;
+}
+
+const h = hot();
+if (h?.ready) h.ready(boot);
+else boot(h?.data ?? {});
 
 /** Android hardware back button: close dialogs, open the pause menu, or go back to the title. */
 async function setupNative(app: App): Promise<void> {
+  if (ARTIFACT) return;
   const { Capacitor } = await import('@capacitor/core');
   if (!Capacitor.isNativePlatform()) return;
   const { App: NativeApp } = await import('@capacitor/app');

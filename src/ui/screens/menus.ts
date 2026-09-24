@@ -58,6 +58,15 @@ export function titleScreen(app: App): HTMLElement {
   });
   logo.append(heroes);
   el.append(logo);
+  for (let i = 0; i < 22; i++) {
+    const e = h('div', { class: 'ember' });
+    e.style.left = `${Math.round(Math.random() * 100)}%`;
+    e.style.animationDuration = `${6 + Math.random() * 8}s`;
+    e.style.animationDelay = `${-Math.random() * 12}s`;
+    e.style.setProperty('--dx', `${Math.round((Math.random() - 0.5) * 80)}px`);
+    if (Math.random() < 0.3) e.style.background = '#ffe08a';
+    el.append(e);
+  }
 
   const menu = h('div', { class: 'menu' });
   const click = (f: () => void) => () => {
@@ -283,21 +292,11 @@ export function campScreen(app: App): HTMLElement {
   sc.append(h('h3', { style: { margin: '10px 0 8px' } }, t(S.heroes)));
   const heroes = h('div', { class: 'class-tabs', style: { padding: '0 0 10px' } });
   for (const cls of CLASS_ORDER) {
-    const unlocked = app.profile.unlocked.includes(cls);
-    const b = h('button', { class: `class-tab ${unlocked ? 'sel' : 'locked'}` });
+    const wins = app.profile.classWins[cls] ?? 0;
+    const b = h('button', { class: `class-tab ${wins ? 'sel' : ''}`, title: t(CLASSES[cls].name) });
     b.append(h('img', { src: spriteUrl('hero:' + cls), alt: '' }));
-    if (!unlocked) b.append(h('span', { class: 'px', style: { position: 'absolute', bottom: '2px', fontSize: '11px', color: '#8fe3ff' } }, String(CLASSES[cls].unlock)));
-    b.addEventListener('click', () => {
-      if (unlocked) return;
-      if (unlockClass(app.profile, cls)) {
-        audio.sfx('chest');
-        toast(t(CLASSES[cls].name) + ' ✓', 'star');
-        app.go('camp');
-      } else {
-        audio.sfx('error');
-        toast(t(S.unlockFor, { n: CLASSES[cls].unlock }), 'lock');
-      }
-    });
+    b.append(h('span', { class: 'px', style: { position: 'absolute', bottom: '1px', right: '4px', fontSize: '12px', color: wins ? '#ffe08a' : '#8a7aa0' } }, wins ? `★${wins}` : '·'));
+    b.addEventListener('click', () => toast(`${t(CLASSES[cls].name)} · ${t(S.statWins)}: ${wins}`, 'trophy'));
     heroes.append(b);
   }
   sc.append(heroes);
