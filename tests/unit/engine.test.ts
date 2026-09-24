@@ -271,3 +271,26 @@ describe('run flow', () => {
     expect(['victory', 'defeat']).toContain(h.screen);
   });
 });
+
+describe('act progression', () => {
+  it('advances to the next act after the boss even without boss relic rewards', () => {
+    const run = newRun({ cls: 'warrior', mode: 'classic', seed: 5 }, profile);
+    const c = startCombat(run, run.map.bossId);
+    for (const e of c.enemies()) c.dealDamage(c.hero, e, 9999, { attack: true });
+    finishCombat(run, profile);
+    run.rewards = run.rewards!.filter((r) => r.kind !== 'bossRelic');
+    proceed(run, profile);
+    expect(run.act).toBe(2);
+    expect(run.screen).toBe('map');
+  });
+
+  it('the final boss ends the run in victory', () => {
+    const run = newRun({ cls: 'monk', mode: 'classic', seed: 6 }, profile);
+    run.act = 3;
+    const c = startCombat(run, 'a3_b_dragon');
+    for (const e of c.enemies()) c.dealDamage(c.hero, e, 9999, { attack: true });
+    finishCombat(run, profile);
+    proceed(run, profile);
+    expect(run.screen).toBe('victory');
+  });
+});

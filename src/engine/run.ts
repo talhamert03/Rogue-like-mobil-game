@@ -419,7 +419,10 @@ export function finishCombat(run: RunState, profile: Profile): 'reward' | 'defea
     return 'defeat';
   }
   if (tier === 'elite') run.stats.elites++;
-  if (tier === 'boss') run.stats.bosses++;
+  if (tier === 'boss') {
+    run.stats.bosses++;
+    run.relicCounters.bossWon = 1;
+  }
   const loot = new Rng(run.rng.loot);
   const rewards: RewardItem[] = [];
   const goldBase = tier === 'boss' ? loot.int(95, 110) : tier === 'elite' ? loot.int(28, 38) : loot.int(12, 20);
@@ -487,7 +490,8 @@ export function rerollCardReward(run: RunState, idx: number, profile: Profile): 
 
 /** leave the reward/shop/event/rest/treasure screen */
 export function proceed(run: RunState, profile: Profile): void {
-  const wasBoss = run.combat === null && run.rewards?.some((r) => r.kind === 'bossRelic');
+  const wasBoss = run.combat === null && !!run.relicCounters.bossWon;
+  delete run.relicCounters.bossWon;
   run.rewards = null;
   run.shop = null;
   run.event = null;
