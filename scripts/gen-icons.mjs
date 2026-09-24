@@ -88,5 +88,4 @@ for (const dir of fs.readdirSync(res)) {
 }
 await write('public/icon-192.png', 'icon', 192, 192);
 await write('public/icon-512.png', 'icon', 512, 512);
-await write('public/splash-preview.png', 'splash', 720, 1280);
 await browser.close();

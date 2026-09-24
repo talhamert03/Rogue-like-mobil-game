@@ -116,7 +116,13 @@ test('every room screen renders', async ({ page }) => {
       if (fn === 'shop') {
         run.map.nodes[0].type = 'shop';
         dd.enterNode(run, run.map.nodes.filter((n: any) => n.row === 0)[0].id, app.profile);
-      } else if (fn === 'event') dd.startEvent(run, app.profile);
+      } else if (fn === 'event') {
+        // "unknown" rooms can also roll a surprise fight or treasure; retry until we get an event
+        for (let i = 0; i < 20 && run.screen !== 'event'; i++) {
+          run.combat = null;
+          dd.startEvent(run, app.profile);
+        }
+      }
       else if (fn === 'rest') {
         run.rest = { done: false };
         run.screen = 'rest';
@@ -140,5 +146,32 @@ test('every room screen renders', async ({ page }) => {
   await force('boss');
   await expect(page.locator('.battle')).toBeVisible();
   await page.screenshot({ path: 'test-results/boss.png' });
+  expect(errors).toEqual([]);
+});
+
+test('a run in the middle of combat survives a reload', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  await fresh(page);
+  await startRun(page, 2);
+  await page.locator('.mnode.avail').first().click({ force: true });
+  await expect(page.locator('.battle')).toBeVisible();
+  const hint = page.locator('.hint-box .btn');
+  if (await hint.count()) await hint.click();
+  const before = await page.evaluate(() => {
+    const w = window as unknown as { __app: { run: { combat: { units: { uid: number; hp: number; pos: number }[]; hand: unknown[] } } } };
+    const c = w.__app.run.combat;
+    return { units: c.units.map((u) => `${u.uid}:${u.hp}:${u.pos}`).join(','), hand: c.hand.length };
+  });
+  await page.reload();
+  await page.getByText('Devam Et').click();
+  await expect(page.locator('.battle')).toBeVisible();
+  const after = await page.evaluate(() => {
+    const w = window as unknown as { __app: { run: { combat: { units: { uid: number; hp: number; pos: number }[]; hand: unknown[] } } } };
+    const c = w.__app.run.combat;
+    return { units: c.units.map((u) => `${u.uid}:${u.hp}:${u.pos}`).join(','), hand: c.hand.length };
+  });
+  expect(after).toEqual(before);
+  await expect(page.locator('.hand .card')).toHaveCount(before.hand);
   expect(errors).toEqual([]);
 });
