@@ -271,14 +271,14 @@ E({
   name: L('Mahzen Bekçisi', 'Crypt Warden'),
   sprite: 'golem',
   scale: 1.7,
-  hp: [150, 150],
+  hp: [140, 140],
   speed: 1,
   tier: 'boss',
   moves: {
     advance: ADV,
     rocks: { kind: 'attack', dmg: 7, times: 2, range: 6, fx: 'rock', name: L('Taş Yağmuru', 'Rock Hail') },
     slam: { kind: 'area', dmg: 14, front: 3, fx: 'slam', name: L('Yıkım Darbesi', 'Crushing Slam') },
-    fortify: { kind: 'block', block: 20, self: { strength: 2 }, name: L('Taşlaş', 'Fortify') },
+    fortify: { kind: 'block', block: 18, self: { strength: 1 }, name: L('Taşlaş', 'Fortify') },
     pound: { kind: 'area', dmg: 10, radius: 2, push: 1, fx: 'slam', name: L('Zemin Sarsıntısı', 'Ground Pound') },
   },
   ai: cycle('rocks', 'slam', 'fortify', 'pound', 'rocks', 'slam'),
@@ -290,18 +290,18 @@ E({
   name: L('Fare Kralı', 'Rat King'),
   sprite: 'ratKing',
   scale: 1.6,
-  hp: [130, 130],
+  hp: [120, 120],
   speed: 1,
   tier: 'boss',
   moves: {
     advance: ADV,
-    summon: { kind: 'summon', summon: ['rat', 'rat'], name: L('Sürüyü Çağır', 'Call the Swarm') },
+    summon: { kind: 'summon', summon: ['rat'], name: L('Sürüyü Çağır', 'Call the Swarm') },
     plague: { kind: 'attack', dmg: 10, range: 2, target: { poison: 3 }, fx: 'bite', name: L('Veba Isırığı', 'Plague Bite') },
     crush: { kind: 'area', dmg: 13, aroundTarget: 1, fx: 'slam', name: L('Taç Darbesi', 'Crown Crush') },
     squeak: { kind: 'buff', allies: { strength: 2 }, self: { strength: 1 }, block: 10, name: L('Buyruk', 'Decree') },
   },
   ai: (c) => {
-    if (c.allies.length < 2 && c.last !== 'summon' && c.freeTiles > 2) return 'summon';
+    if (c.allies.length < 2 && c.last !== 'summon' && c.count('summon') < 4 && c.freeTiles > 2) return 'summon';
     if (c.dist > 3) return weighted(c, { advance: 1, squeak: 1 }, 1);
     return weighted(c, { plague: 2, crush: 2, squeak: 1 }, 1);
   },
@@ -533,12 +533,12 @@ E({
   name: L('Mantar Ana', 'Mycelium Mother'),
   sprite: 'mushroomBoss',
   scale: 1.8,
-  hp: [220, 220],
+  hp: [200, 200],
   speed: 0,
   tier: 'boss',
   moves: {
     spawn: { kind: 'summon', summon: ['sporeling'], name: L('Tomurcuklan', 'Bud') },
-    cloud: { kind: 'area', dmg: 5, radius: 3, target: { poison: 3 }, fx: 'spores', name: L('Zehir Bulutu', 'Toxic Cloud') },
+    cloud: { kind: 'area', dmg: 4, radius: 3, target: { poison: 2 }, fx: 'spores', name: L('Zehir Bulutu', 'Toxic Cloud') },
     tendril: { kind: 'attack', dmg: 12, range: 6, pull: 3, fx: 'vine', name: L('Kök Kamçısı', 'Root Lash') },
     regrow: { kind: 'heal', heal: 20, block: 15, name: L('Yeniden Filizlen', 'Regrow') },
   },
@@ -553,19 +553,19 @@ E({
   name: L('Trol Kral', 'Troll King'),
   sprite: 'troll',
   scale: 1.8,
-  hp: [240, 240],
+  hp: [220, 220],
   speed: 1,
   tier: 'boss',
-  start: { regen: 6 },
+  start: { regen: 4 },
   moves: {
     advance: ADV,
-    club: { kind: 'area', dmg: 18, aroundTarget: 1, fx: 'slam', name: L('Tokmak', 'Club Slam') },
+    club: { kind: 'area', dmg: 16, aroundTarget: 1, fx: 'slam', name: L('Tokmak', 'Club Slam') },
     charge: { kind: 'charge', dmg: 14, charge: 3, push: 2, name: L('Hücum', 'Stampede') },
     rocks: { kind: 'attack', dmg: 9, times: 2, range: 5, fx: 'rock', name: L('Kaya Fırlat', 'Boulder Toss') },
-    regen: { kind: 'buff', self: { regen: 8 }, block: 10, name: L('Yenilen', 'Regenerate') },
+    regen: { kind: 'buff', self: { regen: 6 }, block: 10, name: L('Yenilen', 'Regenerate') },
   },
   ai: (c) => {
-    if (c.me.hp < c.me.maxHp * 0.5 && c.count('regen') < 3 && c.last !== 'regen') return 'regen';
+    if (c.me.hp < c.me.maxHp * 0.5 && c.count('regen') < 2 && c.last !== 'regen') return 'regen';
     if (c.dist > 1 && c.dist <= 4 && c.last !== 'charge') return weighted(c, { charge: 2, rocks: 1 }, 1);
     if (c.dist > 4) return 'rocks';
     return weighted(c, { club: 3, rocks: 1 }, 1);

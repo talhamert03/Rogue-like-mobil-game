@@ -110,7 +110,7 @@ C('windForm', R, 'rare', 'wind', 'Rüzgârla Bir', 'One with the Wind', (u) => p
 
 /* =============================================================== WIZARD */
 const Z = 'wizard';
-C('arcaneBolt', Z, 'starter', 'bolt', 'Büyü Oku', 'Arcane Bolt', (u) => atk(1, 4, [D(v(u, 5, 8), { fx: 'arcane' })]));
+C('arcaneBolt', Z, 'starter', 'bolt', 'Büyü Oku', 'Arcane Bolt', (u) => atk(1, 4, [D(v(u, 6, 9), { fx: 'arcane' })]));
 C('ward', Z, 'starter', 'rune', 'Büyü Kalkanı', 'Ward', (u) => skl(1, [B(v(u, 5, 8))]));
 C('fireball', Z, 'starter', 'fireball', 'Ateş Topu', 'Fireball', (u) => atk(2, 5, [D(v(u, 8, 11), { to: 'area', radius: 1, fx: 'fire' }), S('burn', 2, 'area', { radius: 1 })], { target: 'tile' }));
 C('frostLance', Z, 'starter', 'ice', 'Buz Mızrağı', 'Frost Lance', (u) => atk(1, 4, [D(v(u, 6, 8), { fx: 'ice' }), S('root', v(u, 1, 2))]));
@@ -144,7 +144,7 @@ C('inferno', Z, 'rare', 'fire', 'Cehennem Alevi', 'Inferno', (u) => skl(2, [S('b
 const A = 'assassin';
 C('stab', A, 'starter', 'dagger', 'Hançer', 'Stab', (u) => atk(1, 1, [D(v(u, 6, 9), { fx: 'slash' })]));
 C('evade', A, 'starter', 'cloak', 'Sakınma', 'Evade', (u) => skl(1, [B(v(u, 5, 8))]));
-C('toxicBlade', A, 'starter', 'poisonDagger', 'Zehirli Bıçak', 'Toxic Blade', (u) => atk(1, 1, [D(v(u, 3, 4)), S('poison', v(u, 3, 5))]));
+C('toxicBlade', A, 'starter', 'poisonDagger', 'Zehirli Bıçak', 'Toxic Blade', (u) => atk(1, 1, [D(v(u, 3, 4)), S('poison', v(u, 4, 6))]));
 C('shadowstep', A, 'starter', 'shadow', 'Gölge Sıçrayışı', 'Shadowstep', (u) => skl(v(u, 1, 0), [{ k: 'behindTarget' }, SELF('dodge', 1)], { target: 'enemy', range: 3 }));
 C('throwingKnife', 'token', 'special', 'dagger', 'Atış Hançeri', 'Throwing Knife', (u) => atk(0, 3, [D(v(u, 4, 6), { fx: 'knife' })], { exhaust: true }));
 C('bladeFlurry', A, 'common', 'daggers', 'Bıçak Yağmuru', 'Blade Flurry', (u) => skl(1, [ADD('throwingKnife', v(u, 2, 3))]));
@@ -208,10 +208,10 @@ C('radiantBurst', P, 'rare', 'nova', 'Işık Patlaması', 'Radiant Burst', (u) =
 
 /* ========================================================== NECROMANCER */
 const N = 'necromancer';
-C('shadowBolt', N, 'starter', 'shadowBolt', 'Gölge Oku', 'Shadow Bolt', (u) => atk(1, 3, [D(v(u, 5, 8), { fx: 'shadow' })]));
+C('shadowBolt', N, 'starter', 'shadowBolt', 'Gölge Oku', 'Shadow Bolt', (u) => atk(1, 3, [D(v(u, 6, 9), { fx: 'shadow' })]));
 C('boneArmor', N, 'starter', 'bone', 'Kemik Zırh', 'Bone Armor', (u) => skl(1, [B(v(u, 5, 8))]));
 C('raiseSkeleton', N, 'starter', 'skull', 'İskelet Dirilt', 'Raise Skeleton', (u) => skl(1, [SUMMON('skeleton')], { target: 'empty', range: 2 }));
-C('drainLife', N, 'starter', 'drain', 'Can Emme', 'Drain Life', (u) => atk(1, 2, [D(v(u, 5, 8), { fx: 'soul', lifesteal: 0.5 })]));
+C('drainLife', N, 'starter', 'drain', 'Can Emme', 'Drain Life', (u) => atk(1, 3, [D(v(u, 7, 10), { fx: 'soul', lifesteal: 0.5 })]));
 C('hex', N, 'common', 'eye', 'Lanet', 'Hex', (u) => skl(0, [S('weak', v(u, 1, 2)), S('vulnerable', v(u, 1, 2))], { target: 'enemy', range: 4 }));
 C('soulHarvest', N, 'common', 'scythe', 'Ruh Hasadı', 'Soul Harvest', (u) => atk(1, 3, [D(v(u, 6, 9), { fx: 'soul' }), CUSTOM('gainSoulOnKill', 2)], {
   note: L('Öldürürse 2 Ruh kazan.', 'If it kills, gain 2 Souls.'),
@@ -251,7 +251,7 @@ C('deathCoil', N, 'rare', 'drain', 'Ölüm Sarmalı', 'Death Coil', (u) => atk(2
 const E = 'engineer';
 C('wrench', E, 'starter', 'wrench', 'Anahtar Darbesi', 'Wrench Whack', (u) => atk(1, 1, [D(v(u, 6, 9), { fx: 'impact' })]));
 C('plating', E, 'starter', 'plate', 'Metal Levha', 'Plating', (u) => skl(1, [B(v(u, 5, 8))]));
-C('buildTurret', E, 'starter', 'turret', 'Taret Kur', 'Build Turret', (u) => skl(2, [SUMMON('turret')], { target: 'empty', range: 2 }));
+C('buildTurret', E, 'starter', 'turret', 'Taret Kur', 'Build Turret', (u) => skl(v(u, 2, 1), [SUMMON('turret')], { target: 'empty', range: 2 }));
 C('throwBomb', E, 'starter', 'bomb', 'Bomba At', 'Throw Bomb', (u) => skl(1, [{ k: 'bomb', n: v(u, 12, 16), radius: 1, timer: 1 }], { target: 'tile', range: 4 }));
 C('shockPistol', E, 'common', 'pistol', 'Şok Tabancası', 'Shock Pistol', (u) => atk(1, 4, [D(v(u, 4, 6), { fx: 'lightning' }), S('root', 1)]));
 C('landmine', E, 'common', 'mine', 'Kara Mayını', 'Landmine', (u) => skl(0, [TRAP('mine', v(u, 7, 10))], { target: 'empty', range: 3 }));
@@ -287,8 +287,8 @@ C('doomEngine', E, 'rare', 'mech', 'Savaş Robotu', 'War Mech', (u) => skl(3, [S
 const M = 'monk';
 C('palmStrike', M, 'starter', 'fist', 'Avuç Darbesi', 'Palm Strike', (u) => atk(1, 1, [D(v(u, 6, 9), { fx: 'fist' })]));
 C('ironStance', M, 'starter', 'stance', 'Demir Duruş', 'Iron Stance', (u) => skl(1, [B(v(u, 5, 8))]));
-C('flyingKick', M, 'starter', 'kick', 'Uçan Tekme', 'Flying Kick', (u) => atk(1, 3, [DASH(2), D(v(u, 5, 8), { fx: 'fist' }), PUSH(2)]));
-C('meditate', M, 'starter', 'lotus', 'Meditasyon', 'Meditate', (u) => skl(1, [SELF('ki', v(u, 2, 3)), B(v(u, 3, 4))]));
+C('flyingKick', M, 'starter', 'kick', 'Uçan Tekme', 'Flying Kick', (u) => atk(1, 3, [DASH(2), D(v(u, 6, 9), { fx: 'fist' }), PUSH(1), SELF('ki', 1)]));
+C('meditate', M, 'common', 'lotus', 'Meditasyon', 'Meditate', (u) => skl(1, [SELF('ki', v(u, 2, 3)), B(v(u, 3, 4))]));
 C('windStep', M, 'common', 'wind', 'Rüzgar Adımı', 'Wind Step', (u) => skl(0, [MP(v(u, 1, 2)), SELF('ki', 1)]));
 C('sweepKick', M, 'common', 'kick', 'Süpürme Tekmesi', 'Sweep Kick', (u) => atk(1, 0, [D(v(u, 5, 7), { to: 'adjacent', fx: 'fist' }), PUSH(1, 'adjacent')], { target: 'none' }));
 C('tigerClaw', M, 'common', 'claw', 'Kaplan Pençesi', 'Tiger Claw', (u) => atk(1, 1, [D(v(u, 3, 4), { times: 3, fx: 'slash' })]));

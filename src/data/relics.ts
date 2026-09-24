@@ -127,8 +127,8 @@ R({
   icon: 'lantern',
   tint: '#9b6bd6',
   name: L('Ruh Feneri', 'Soul Lantern'),
-  desc: L('Savaşa 1 Ruh ile başla. Her düşman öldüğünde 1 Ruh kazan.', 'Start combat with 1 Soul. Gain 1 Soul whenever an enemy dies.'),
-  onCombatStart: (c) => c.applyStatus(c.hero, 'souls', 1, c.hero),
+  desc: L('Savaşa 2 Ruh ile başla. Her düşman öldüğünde 1 Ruh kazan.', 'Start combat with 2 Souls. Gain 1 Soul whenever an enemy dies.'),
+  onCombatStart: (c) => c.applyStatus(c.hero, 'souls', 2, c.hero),
 });
 R({
   id: 'toolkit',
@@ -150,8 +150,8 @@ R({
   icon: 'beads',
   tint: '#4fc1b0',
   name: L('Nefes Tespihi', 'Breath Beads'),
-  desc: L('Savaşa 1 Ki ile başla. Bir düşmanı bir şeye çarptırdığında 1 Ki kazan.', 'Start combat with 1 Ki. Gain 1 Ki whenever you slam an enemy into something.'),
-  onCombatStart: (c) => c.applyStatus(c.hero, 'ki', 1, c.hero),
+  desc: L('Savaşa 2 Ki ile başla. Bir düşmanı bir şeye çarptırdığında 1 Ki kazan.', 'Start combat with 2 Ki. Gain 1 Ki whenever you slam an enemy into something.'),
+  onCombatStart: (c) => c.applyStatus(c.hero, 'ki', 2, c.hero),
 });
 
 /* --------------------------------------------------------------- common */
