@@ -24,9 +24,32 @@ function boot(): void {
     } else audio.ctx?.resume().catch(() => undefined);
   });
   window.addEventListener('pagehide', () => app.save());
+  void setupNative(app);
   if ('serviceWorker' in navigator && location.protocol === 'https:' && import.meta.env.PROD) {
     navigator.serviceWorker.register('./sw.js').catch(() => undefined);
   }
 }
 
 boot();
+
+/** Android hardware back button: close dialogs, open the pause menu, or go back to the title. */
+async function setupNative(app: App): Promise<void> {
+  const { Capacitor } = await import('@capacitor/core');
+  if (!Capacitor.isNativePlatform()) return;
+  const { App: NativeApp } = await import('@capacitor/app');
+  await NativeApp.addListener('backButton', () => {
+    const modal = document.querySelector('.modal-back');
+    if (modal) {
+      modal.remove();
+      return;
+    }
+    if (document.querySelector('.title-screen')) {
+      app.save();
+      void NativeApp.minimizeApp();
+      return;
+    }
+    if (app.run && app.root.querySelector('.topbar')) app.pauseMenu();
+    else app.go('title');
+  });
+  await NativeApp.addListener('pause', () => app.save());
+}
