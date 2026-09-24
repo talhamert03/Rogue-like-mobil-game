@@ -91,6 +91,8 @@ interface Ctx {
   c?: Combat;
   tgt?: Unit;
   spec: CardSpec;
+  /** selector of the previous damage effect, for "apply X to them" phrasing */
+  prevTo?: string;
 }
 
 function dmgNum(n: Num, holy: boolean | undefined, ctx: Ctx): string {
@@ -130,6 +132,7 @@ function effText(e: Effect, ctx: Ctx): string {
       }
       const w = who(to, e);
       if (to === 'target') return T ? `${valText(e.n)} ${statusName(e.s)} uygula.` : `Apply ${valText(e.n)} ${statusName(e.s)}.`;
+      if (ctx.prevTo === to) return T ? `Onlara ${valText(e.n)} ${statusName(e.s)} uygula.` : `Apply ${valText(e.n)} ${statusName(e.s)} to them.`;
       return T ? `${w.tr} ${valText(e.n)} ${statusName(e.s)} uygula.` : `Apply ${valText(e.n)} ${statusName(e.s)} ${w.en}.`;
     }
     case 'draw':
@@ -151,6 +154,7 @@ function effText(e: Effect, ctx: Ctx): string {
       const to = e.to ?? 'target';
       const stun = e.stun ? (T ? ' Bir şeye çarparsa Sersemlet.' : ' Stun it if it collides.') : '';
       if (to === 'target') return (T ? `Hedefi ${e.n} kare <span class="kw">it</span>.` : `<span class="kw">Push</span> the target ${e.n} tiles.`) + stun;
+      if (ctx.prevTo === to) return (T ? `Onları ${e.n} kare <span class="kw">it</span>.` : `<span class="kw">Push</span> them ${e.n} tiles.`) + stun;
       const w = who(to, e);
       return (T ? `${w.tr.replace(/a$/, 'ı').replace('düşmanlara', 'düşmanları')} ${e.n} kare <span class="kw">it</span>.` : `<span class="kw">Push</span> enemies ${e.n} tiles (${w.en.replace('to ', '')}).`) + stun;
     }
@@ -201,7 +205,13 @@ export function describeSpec(spec: CardSpec, c?: Combat, tgt?: Unit, up = false)
   const T = tr();
   if (spec.innate) parts.push(T ? '<span class="kw">Doğuştan</span>.' : '<span class="kw">Innate</span>.');
   if (spec.desc) parts.push(t(spec.desc));
-  else parts.push(...spec.effects.map((e) => effText(e, ctx)).filter(Boolean));
+  else
+    for (const e of spec.effects) {
+      const txt = effText(e, ctx);
+      if (txt) parts.push(txt);
+      if (e.k === 'dmg') ctx.prevTo = e.to ?? 'target';
+      else if (e.k !== 'status' && e.k !== 'push') ctx.prevTo = undefined;
+    }
   if (spec.note) parts.push(t(spec.note));
   if (spec.retain) parts.push(T ? '<span class="kw">Saklı</span>.' : '<span class="kw">Retain</span>.');
   if (spec.ethereal && !spec.desc) parts.push(T ? '<span class="kw">Uçucu</span>.' : '<span class="kw">Ethereal</span>.');

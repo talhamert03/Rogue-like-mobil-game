@@ -1,0 +1,32 @@
+import { chromium } from '@playwright/test';
+const out = process.env.SHOTS;
+const browser = await chromium.launch();
+const page = await browser.newPage({ locale: 'tr-TR', viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true });
+const errors = [];
+page.on('pageerror', (e) => errors.push(String(e)));
+page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+await page.goto('http://localhost:5173/');
+await page.evaluate(() => localStorage.clear());
+await page.reload();
+await page.waitForTimeout(500);
+await page.getByText('Yeni Macera').click();
+await page.getByText('Klasik', { exact: true }).click();
+await page.locator('.class-tab').nth(Number(process.env.CLS ?? 0)).click();
+await page.getByText('Maceraya Atıl').click();
+await page.waitForTimeout(400);
+await page.locator('.mnode.avail').first().click({ force: true });
+await page.waitForTimeout(1500);
+const ok = page.locator('.hint-box .btn');
+if (await ok.count()) await ok.click();
+await page.screenshot({ path: `${out}/10-battle.png` });
+// select a card and show targets
+await page.locator('.hand .card.playable').first().click({ force: true });
+await page.waitForTimeout(300);
+await page.screenshot({ path: `${out}/11-select.png` });
+// play remaining turn: try to move closer and end turn
+await page.locator('.hand').click({ position: { x: 5, y: 5 }, force: true }).catch(() => {});
+await page.getByText('Turu Bitir').click({ force: true });
+await page.waitForTimeout(4000);
+await page.screenshot({ path: `${out}/12-after-enemy.png` });
+console.log('errors:', JSON.stringify(errors, null, 1));
+await browser.close();

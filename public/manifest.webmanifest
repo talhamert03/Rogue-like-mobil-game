@@ -1,0 +1,16 @@
+{
+  "name": "Deckdelver — Kart Zindanı",
+  "short_name": "Deckdelver",
+  "description": "Mobil roguelike kart zindan RPG'si",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#120c18",
+  "theme_color": "#120c18",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
