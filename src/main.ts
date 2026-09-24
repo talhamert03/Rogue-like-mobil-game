@@ -2,6 +2,7 @@ import './ui/style.css';
 import { App } from './ui/app';
 import { audio } from './audio/audio';
 import * as runApi from './engine/run';
+import * as gfx from './gfx/render';
 
 function boot(): void {
   const root = document.getElementById('app');
@@ -10,6 +11,7 @@ function boot(): void {
   (window as unknown as { __app: App }).__app = app;
   // test/debug hook (used by the automated browser tests)
   (window as unknown as { __dd: unknown }).__dd = runApi;
+  (window as unknown as { __gfx: unknown }).__gfx = gfx;
   app.go('title');
   const unlock = () => audio.unlock();
   window.addEventListener('pointerdown', unlock, { once: true });
